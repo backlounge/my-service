@@ -1,19 +1,13 @@
-const logoutButton = document.getElementById("logout-button");
 const refreshButton = document.getElementById("refresh-button");
 const contactList = document.getElementById("contact-list");
 const emptyMessage = document.getElementById("empty-message");
 const loadError = document.getElementById("load-error");
 const template = document.getElementById("contact-card-template");
 const statusFilters = document.getElementById("status-filters");
-const currentUserLabel = document.getElementById("current-user");
 const roleNotice = document.getElementById("role-notice");
 
 let currentStatus = "";
 let currentRole = null;
-
-function redirectToLogin() {
-  window.location.href = "/admin/login";
-}
 
 function formatDate(value) {
   try {
@@ -44,19 +38,6 @@ function renderContacts(contacts) {
 
     contactList.appendChild(node);
   }
-}
-
-async function loadCurrentUser() {
-  const response = await fetch("/api/auth/me", { credentials: "include" });
-  if (response.status === 401) {
-    redirectToLogin();
-    return false;
-  }
-  const result = await response.json();
-  currentRole = result.user.role;
-  currentUserLabel.textContent = `${result.user.email}(${result.user.role === "admin" ? "管理者" : "一般ユーザー"})`;
-  roleNotice.classList.toggle("hidden", currentRole === "admin");
-  return true;
 }
 
 async function loadContacts() {
@@ -105,11 +86,6 @@ async function updateStatus(id, status, selectEl) {
   }
 }
 
-logoutButton.addEventListener("click", async () => {
-  await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-  redirectToLogin();
-});
-
 refreshButton.addEventListener("click", () => loadContacts());
 
 statusFilters.addEventListener("click", (event) => {
@@ -124,8 +100,10 @@ statusFilters.addEventListener("click", (event) => {
 
 (async function init() {
   statusFilters.querySelector('[data-status=""]').classList.add("is-active");
-  const ok = await loadCurrentUser();
-  if (ok) {
+  const user = await initAdminChrome();
+  if (user) {
+    currentRole = user.role;
+    roleNotice.classList.toggle("hidden", currentRole === "admin");
     await loadContacts();
   }
 })();

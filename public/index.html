@@ -55,7 +55,7 @@
     <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
       <a href="#top" class="flex items-center gap-2 text-lg font-bold text-slate-900">
         <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white">G</span>
-        ギョウムラク
+        <span data-cms="site-name">ギョウムラク</span>
       </a>
 
       <nav class="hidden items-center gap-8 md:flex">
@@ -101,16 +101,16 @@
       <div class="mx-auto max-w-7xl px-6 pb-20 pt-16 lg:flex lg:items-center lg:gap-12 lg:px-8 lg:pb-28 lg:pt-24">
         <div class="lg:w-1/2">
           <span class="badge">中小企業・個人事業主向け</span>
-          <h1 class="mt-6 text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-5xl">
+          <h1 class="mt-6 text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-5xl" data-cms="hero-title">
             顧客管理も在庫管理も、<br class="hidden sm:block" />
             これひとつで。
           </h1>
-          <p class="section-subtitle">
+          <p class="section-subtitle" data-cms="hero-description">
             むずかしい設定は不要。今日から使えるシンプルな業務システムで、
             日々の顧客対応と在庫管理を一元化し、バックオフィスの時間を減らします。
           </p>
           <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-            <a href="#contact" class="btn-primary">無料で利用開始</a>
+            <a href="#contact" class="btn-primary" data-cms="cta-text">無料で利用開始</a>
             <a href="#screenshots" class="btn-secondary">画面イメージを見る</a>
           </div>
           <p class="mt-4 text-sm text-slate-500">クレジットカード登録不要・最短即日で導入相談可能</p>
@@ -255,9 +255,9 @@
 
       <div class="mt-14 grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div class="card flex flex-col">
-          <h3 class="text-lg font-semibold text-slate-900">スタータープラン</h3>
-          <p class="mt-2 text-sm text-slate-500">まずは試してみたい方に</p>
-          <p class="mt-6 text-4xl font-bold text-slate-900">¥0<span class="text-base font-medium text-slate-500"> / 月</span></p>
+          <h3 class="text-lg font-semibold text-slate-900" data-cms="plan1-name">スタータープラン</h3>
+          <p class="mt-2 text-sm text-slate-500" data-cms="plan1-description">まずは試してみたい方に</p>
+          <p class="mt-6 text-4xl font-bold text-slate-900"><span data-cms="plan1-price">¥0</span><span class="text-base font-medium text-slate-500"> / 月</span></p>
           <ul class="mt-6 flex-1 space-y-3 text-sm text-slate-600">
             <li class="flex gap-2"><span class="text-brand-600">✓</span>顧客管理(登録件数 上限あり)</li>
             <li class="flex gap-2"><span class="text-brand-600">✓</span>基本レポート機能</li>
@@ -269,9 +269,9 @@
 
         <div class="relative flex flex-col rounded-2xl border-2 border-brand-600 bg-white p-8 shadow-soft">
           <span class="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-brand-600 px-4 py-1 text-xs font-semibold text-white">人気No.1</span>
-          <h3 class="text-lg font-semibold text-slate-900">スタンダードプラン</h3>
-          <p class="mt-2 text-sm text-slate-500">日々の業務をしっかり効率化</p>
-          <p class="mt-6 text-4xl font-bold text-slate-900">¥4,980<span class="text-base font-medium text-slate-500"> / 月</span></p>
+          <h3 class="text-lg font-semibold text-slate-900" data-cms="plan2-name">スタンダードプラン</h3>
+          <p class="mt-2 text-sm text-slate-500" data-cms="plan2-description">日々の業務をしっかり効率化</p>
+          <p class="mt-6 text-4xl font-bold text-slate-900"><span data-cms="plan2-price">¥4,980</span><span class="text-base font-medium text-slate-500"> / 月</span></p>
           <ul class="mt-6 flex-1 space-y-3 text-sm text-slate-600">
             <li class="flex gap-2"><span class="text-brand-600">✓</span>顧客管理(登録件数無制限)</li>
             <li class="flex gap-2"><span class="text-brand-600">✓</span>在庫管理機能</li>
@@ -283,9 +283,9 @@
         </div>
 
         <div class="card flex flex-col">
-          <h3 class="text-lg font-semibold text-slate-900">プロプラン</h3>
-          <p class="mt-2 text-sm text-slate-500">複数拠点・複数人での運用に</p>
-          <p class="mt-6 text-4xl font-bold text-slate-900">¥9,800<span class="text-base font-medium text-slate-500"> / 月</span></p>
+          <h3 class="text-lg font-semibold text-slate-900" data-cms="plan3-name">プロプラン</h3>
+          <p class="mt-2 text-sm text-slate-500" data-cms="plan3-description">複数拠点・複数人での運用に</p>
+          <p class="mt-6 text-4xl font-bold text-slate-900"><span data-cms="plan3-price">¥9,800</span><span class="text-base font-medium text-slate-500"> / 月</span></p>
           <ul class="mt-6 flex-1 space-y-3 text-sm text-slate-600">
             <li class="flex gap-2"><span class="text-brand-600">✓</span>スタンダードプランの全機能</li>
             <li class="flex gap-2"><span class="text-brand-600">✓</span>複数ユーザー・権限管理</li>
@@ -310,17 +310,17 @@
         <div class="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           <div class="card">
             <div class="flex gap-1 text-brand-500">★★★★★</div>
-            <p class="mt-4 text-slate-600">「エクセル管理から切り替えて、顧客対応の抜け漏れがなくなりました。操作もシンプルで導入初日から使えました。」</p>
+            <p class="mt-4 text-slate-600" data-cms="review1-text">「エクセル管理から切り替えて、顧客対応の抜け漏れがなくなりました。操作もシンプルで導入初日から使えました。」</p>
             <p class="mt-6 text-sm font-semibold text-slate-900">小売業 経営者様</p>
           </div>
           <div class="card">
             <div class="flex gap-1 text-brand-500">★★★★★</div>
-            <p class="mt-4 text-slate-600">「在庫の見える化ができ、欠品による機会損失が減りました。サポートの対応も丁寧です。」</p>
+            <p class="mt-4 text-slate-600" data-cms="review2-text">「在庫の見える化ができ、欠品による機会損失が減りました。サポートの対応も丁寧です。」</p>
             <p class="mt-6 text-sm font-semibold text-slate-900">卸売業 ご担当者様</p>
           </div>
           <div class="card">
             <div class="flex gap-1 text-brand-500">★★★★★</div>
-            <p class="mt-4 text-slate-600">「個人事業主なので大げさなシステムは不要でしたが、ちょうど良い機能だけがまとまっていて助かっています。」</p>
+            <p class="mt-4 text-slate-600" data-cms="review3-text">「個人事業主なので大げさなシステムは不要でしたが、ちょうど良い機能だけがまとまっていて助かっています。」</p>
             <p class="mt-6 text-sm font-semibold text-slate-900">個人事業主様</p>
           </div>
         </div>
@@ -344,20 +344,20 @@
       <div class="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
         <a href="#" class="card block">
           <p class="text-xs font-semibold text-slate-400">2026.06.10</p>
-          <h3 class="mt-2 text-lg font-semibold text-slate-900">エクセル管理から卒業するタイミングとは</h3>
-          <p class="mt-2 text-sm text-slate-600">顧客数・在庫件数が増えてきたときに見直すべきポイントを解説します。</p>
+          <h3 class="mt-2 text-lg font-semibold text-slate-900" data-cms="blog1-title">エクセル管理から卒業するタイミングとは</h3>
+          <p class="mt-2 text-sm text-slate-600" data-cms="blog1-summary">顧客数・在庫件数が増えてきたときに見直すべきポイントを解説します。</p>
           <span class="mt-4 inline-block text-sm font-semibold text-brand-600">続きを読む →</span>
         </a>
         <a href="#" class="card block">
           <p class="text-xs font-semibold text-slate-400">2026.05.22</p>
-          <h3 class="mt-2 text-lg font-semibold text-slate-900">小さな会社ほど「在庫の見える化」が効く理由</h3>
-          <p class="mt-2 text-sm text-slate-600">欠品・過剰在庫を防ぐための考え方と運用のコツをご紹介します。</p>
+          <h3 class="mt-2 text-lg font-semibold text-slate-900" data-cms="blog2-title">小さな会社ほど「在庫の見える化」が効く理由</h3>
+          <p class="mt-2 text-sm text-slate-600" data-cms="blog2-summary">欠品・過剰在庫を防ぐための考え方と運用のコツをご紹介します。</p>
           <span class="mt-4 inline-block text-sm font-semibold text-brand-600">続きを読む →</span>
         </a>
         <a href="#" class="card block">
           <p class="text-xs font-semibold text-slate-400">2026.04.15</p>
-          <h3 class="mt-2 text-lg font-semibold text-slate-900">個人事業主が業務システムを選ぶときの3つの基準</h3>
-          <p class="mt-2 text-sm text-slate-600">価格・操作性・サポート体制の観点から選び方を整理しました。</p>
+          <h3 class="mt-2 text-lg font-semibold text-slate-900" data-cms="blog3-title">個人事業主が業務システムを選ぶときの3つの基準</h3>
+          <p class="mt-2 text-sm text-slate-600" data-cms="blog3-summary">価格・操作性・サポート体制の観点から選び方を整理しました。</p>
           <span class="mt-4 inline-block text-sm font-semibold text-brand-600">続きを読む →</span>
         </a>
       </div>
@@ -425,7 +425,7 @@
       <div class="flex flex-col items-center justify-between gap-6 sm:flex-row">
         <a href="#top" class="flex items-center gap-2 text-lg font-bold text-slate-900">
           <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white">G</span>
-          ギョウムラク
+          <span data-cms="site-name">ギョウムラク</span>
         </a>
         <nav class="flex flex-wrap justify-center gap-6 text-sm text-slate-500">
           <a href="#features" class="hover:text-brand-600">特徴</a>
