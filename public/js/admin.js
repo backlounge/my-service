@@ -1,7 +1,3 @@
-const loginSection = document.getElementById("login-section");
-const dashboardSection = document.getElementById("dashboard-section");
-const loginForm = document.getElementById("login-form");
-const loginError = document.getElementById("login-error");
 const logoutButton = document.getElementById("logout-button");
 const refreshButton = document.getElementById("refresh-button");
 const contactList = document.getElementById("contact-list");
@@ -9,19 +5,14 @@ const emptyMessage = document.getElementById("empty-message");
 const loadError = document.getElementById("load-error");
 const template = document.getElementById("contact-card-template");
 const statusFilters = document.getElementById("status-filters");
+const currentUserLabel = document.getElementById("current-user");
+const roleNotice = document.getElementById("role-notice");
 
 let currentStatus = "";
+let currentRole = null;
 
-function showLogin() {
-  loginSection.classList.remove("hidden");
-  dashboardSection.classList.add("hidden");
-  logoutButton.classList.add("hidden");
-}
-
-function showDashboard() {
-  loginSection.classList.add("hidden");
-  dashboardSection.classList.remove("hidden");
-  logoutButton.classList.remove("hidden");
+function redirectToLogin() {
+  window.location.href = "/admin/login";
 }
 
 function formatDate(value) {
@@ -48,10 +39,24 @@ function renderContacts(contacts) {
 
     const select = node.querySelector('[data-field="status"]');
     select.value = contact.status;
+    select.disabled = currentRole !== "admin";
     select.addEventListener("change", () => updateStatus(contact.id, select.value, select));
 
     contactList.appendChild(node);
   }
+}
+
+async function loadCurrentUser() {
+  const response = await fetch("/api/auth/me", { credentials: "include" });
+  if (response.status === 401) {
+    redirectToLogin();
+    return false;
+  }
+  const result = await response.json();
+  currentRole = result.user.role;
+  currentUserLabel.textContent = `${result.user.email}(${result.user.role === "admin" ? "管理者" : "一般ユーザー"})`;
+  roleNotice.classList.toggle("hidden", currentRole === "admin");
+  return true;
 }
 
 async function loadContacts() {
@@ -61,7 +66,7 @@ async function loadContacts() {
   const response = await fetch(`/api/admin/contacts${query}`, { credentials: "include" });
 
   if (response.status === 401) {
-    showLogin();
+    redirectToLogin();
     return;
   }
 
@@ -72,7 +77,6 @@ async function loadContacts() {
   }
 
   const result = await response.json();
-  showDashboard();
   renderContacts(result.contacts || []);
 }
 
@@ -86,52 +90,24 @@ async function updateStatus(id, status, selectEl) {
       body: JSON.stringify({ status }),
     });
     if (response.status === 401) {
-      showLogin();
+      redirectToLogin();
+      return;
+    }
+    if (response.status === 403) {
+      alert("この操作には管理者権限が必要です。");
       return;
     }
     if (!response.ok) {
       alert("ステータスの更新に失敗しました。");
     }
   } finally {
-    selectEl.disabled = false;
+    selectEl.disabled = currentRole !== "admin";
   }
 }
 
-loginForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  loginError.classList.add("hidden");
-
-  const password = document.getElementById("password").value;
-  const submitButton = loginForm.querySelector('button[type="submit"]');
-  submitButton.disabled = true;
-
-  try {
-    const response = await fetch("/api/admin/login", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
-    const result = await response.json();
-
-    if (result.success) {
-      loginForm.reset();
-      await loadContacts();
-    } else {
-      loginError.textContent = result.message || "ログインに失敗しました。";
-      loginError.classList.remove("hidden");
-    }
-  } catch {
-    loginError.textContent = "通信に失敗しました。時間をおいて再度お試しください。";
-    loginError.classList.remove("hidden");
-  } finally {
-    submitButton.disabled = false;
-  }
-});
-
 logoutButton.addEventListener("click", async () => {
-  await fetch("/api/admin/logout", { method: "POST", credentials: "include" });
-  showLogin();
+  await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+  redirectToLogin();
 });
 
 refreshButton.addEventListener("click", () => loadContacts());
@@ -146,6 +122,10 @@ statusFilters.addEventListener("click", (event) => {
   loadContacts();
 });
 
-// 初期表示: すべて を選択状態にしてから一覧取得を試みる(未ログインならログイン画面へ)
-statusFilters.querySelector('[data-status=""]').classList.add("is-active");
-loadContacts();
+(async function init() {
+  statusFilters.querySelector('[data-status=""]').classList.add("is-active");
+  const ok = await loadCurrentUser();
+  if (ok) {
+    await loadContacts();
+  }
+})();

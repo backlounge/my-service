@@ -3,7 +3,11 @@ import { json } from "../../../_lib/response.js";
 const ALLOWED_STATUS = ["new", "doing", "done"];
 
 export async function onRequestPatch(context) {
-  const { env, request, params } = context;
+  const { env, request, params, data } = context;
+
+  if (data.user.role !== "admin") {
+    return json({ success: false, message: "この操作には管理者権限が必要です。" }, 403);
+  }
 
   const id = Number(params.id);
   if (!Number.isInteger(id) || id <= 0) {

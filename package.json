@@ -10,7 +10,11 @@
     "deploy": "npm run build && wrangler pages deploy public",
     "d1:create": "wrangler d1 create gyomu_system_lp_db",
     "d1:migrate:local": "wrangler d1 execute gyomu_system_lp_db --local --file=./schema.sql",
-    "d1:migrate:remote": "wrangler d1 execute gyomu_system_lp_db --remote --file=./schema.sql"
+    "d1:migrate:remote": "wrangler d1 execute gyomu_system_lp_db --remote --file=./schema.sql",
+    "create-user": "node scripts/create-user.mjs"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",

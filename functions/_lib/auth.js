@@ -1,4 +1,4 @@
-const COOKIE_NAME = "admin_session";
+const COOKIE_NAME = "session";
 const DEFAULT_MAX_AGE_SECONDS = 60 * 60 * 8; // 8時間
 
 async function hmacHex(secret, message) {
@@ -14,10 +14,30 @@ async function hmacHex(secret, message) {
   return [...new Uint8Array(signature)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-export async function createSessionCookie(env, maxAgeSeconds = DEFAULT_MAX_AGE_SECONDS) {
-  const expiresAt = Date.now() + maxAgeSeconds * 1000;
-  const signature = await hmacHex(env.ADMIN_PASSWORD, String(expiresAt));
-  const token = encodeURIComponent(`${expiresAt}.${signature}`);
+function base64UrlEncode(str) {
+  return btoa(unescape(encodeURIComponent(str)))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+function base64UrlDecode(str) {
+  const padded = str.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((str.length + 3) % 4);
+  return decodeURIComponent(escape(atob(padded)));
+}
+
+function readCookie(request) {
+  const cookieHeader = request.headers.get("Cookie") || "";
+  const match = cookieHeader.match(new RegExp(`${COOKIE_NAME}=([^;]+)`));
+  return match ? match[1] : null;
+}
+
+// user: { id, role }
+export async function createSessionCookie(env, user, maxAgeSeconds = DEFAULT_MAX_AGE_SECONDS) {
+  const payload = JSON.stringify({ sub: user.id, role: user.role, exp: Date.now() + maxAgeSeconds * 1000 });
+  const encodedPayload = base64UrlEncode(payload);
+  const signature = await hmacHex(env.SESSION_SECRET, encodedPayload);
+  const token = `${encodedPayload}.${signature}`;
   return `${COOKIE_NAME}=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${maxAgeSeconds}`;
 }
 
@@ -25,17 +45,28 @@ export function clearSessionCookie() {
   return `${COOKIE_NAME}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`;
 }
 
-export async function isAuthenticated(request, env) {
-  if (!env.ADMIN_PASSWORD) return false;
+// 戻り値: { id, role } または未ログイン/無効なセッションの場合は null
+export async function getSessionUser(request, env) {
+  if (!env.SESSION_SECRET) return null;
 
-  const cookieHeader = request.headers.get("Cookie") || "";
-  const match = cookieHeader.match(new RegExp(`${COOKIE_NAME}=([^;]+)`));
-  if (!match) return false;
+  const raw = readCookie(request);
+  if (!raw) return null;
 
-  const [expiresStr, signature] = decodeURIComponent(match[1]).split(".");
-  if (!expiresStr || !signature) return false;
-  if (Number(expiresStr) < Date.now()) return false;
+  const [encodedPayload, signature] = decodeURIComponent(raw).split(".");
+  if (!encodedPayload || !signature) return null;
 
-  const expected = await hmacHex(env.ADMIN_PASSWORD, expiresStr);
-  return expected === signature;
+  const expected = await hmacHex(env.SESSION_SECRET, encodedPayload);
+  if (expected !== signature) return null;
+
+  let payload;
+  try {
+    payload = JSON.parse(base64UrlDecode(encodedPayload));
+  } catch {
+    return null;
+  }
+
+  if (!payload.exp || payload.exp < Date.now()) return null;
+  if (!payload.sub || !payload.role) return null;
+
+  return { id: payload.sub, role: payload.role };
 }
