@@ -39,4 +39,10 @@
   .screenshot-placeholder {
     @apply flex aspect-video w-full items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 text-slate-400;
   }
+  .filter-btn {
+    @apply rounded-full border border-slate-300 bg-white px-4 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50;
+  }
+  .filter-btn.is-active {
+    @apply border-brand-600 bg-brand-600 text-white hover:bg-brand-600;
+  }
 }

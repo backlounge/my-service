@@ -1,0 +1,8 @@
+name = "gyomu-system-lp"
+pages_build_output_dir = "public"
+compatibility_date = "2024-09-23"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "gyomu_system_lp_db"
+database_id = "REPLACE_WITH_YOUR_DATABASE_ID"

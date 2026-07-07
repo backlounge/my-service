@@ -26,7 +26,7 @@ if (menuToggle && mobileMenu) {
   });
 }
 
-// お問い合わせフォーム送信(Web3Forms)
+// お問い合わせフォーム送信(自前API: /api/contact)
 const contactForm = document.getElementById("contact-form");
 const formStatus = document.getElementById("form-status");
 
