@@ -6,3 +6,7 @@ compatibility_date = "2024-09-23"
 binding = "DB"
 database_name = "gyomu_system_lp_db"
 database_id = "34b04b44-7606-4f90-864d-93dd89b5c34b"
+
+[[r2_buckets]]
+binding = "FILES_BUCKET"
+bucket_name = "gyomu-system-lp-files"

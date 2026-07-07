@@ -11,7 +11,8 @@
     "d1:create": "wrangler d1 create gyomu_system_lp_db",
     "d1:migrate:local": "wrangler d1 execute gyomu_system_lp_db --local --file=./schema.sql",
     "d1:migrate:remote": "wrangler d1 execute gyomu_system_lp_db --remote --file=./schema.sql",
-    "create-user": "node scripts/create-user.mjs"
+    "create-user": "node scripts/create-user.mjs",
+    "r2:create": "wrangler r2 bucket create gyomu-system-lp-files"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3"
