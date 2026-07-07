@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ダッシュボード | ギョウムラク管理画面</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
+
+  <header class="border-b border-slate-200 bg-white">
+    <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 py-4">
+      <div class="flex items-center gap-6">
+        <p class="text-lg font-bold text-slate-900">管理画面</p>
+        <nav class="flex items-center gap-4 text-sm font-medium">
+          <a href="/admin/dashboard" class="text-brand-600">ダッシュボード</a>
+          <a href="/admin" class="text-slate-500 hover:text-brand-600">お問い合わせ</a>
+          <a id="site-edit-link" href="/admin/settings" class="hidden text-slate-500 hover:text-brand-600">サイト編集</a>
+        </nav>
+      </div>
+      <div class="flex items-center gap-4">
+        <span id="current-user" class="text-sm text-slate-500"></span>
+        <button id="logout-button" type="button" class="text-sm font-medium text-slate-500 hover:text-brand-600">
+          ログアウト
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-5xl px-6 py-12">
+    <div class="flex items-center justify-between gap-4">
+      <h1 class="text-xl font-bold text-slate-900">ダッシュボード</h1>
+      <button id="refresh-button" type="button" class="btn-secondary">更新</button>
+    </div>
+
+    <p id="load-error" class="mt-10 hidden text-center text-red-600"></p>
+
+    <div id="dashboard-content" class="hidden">
+      <!-- ステータス別件数 -->
+      <div class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div class="card">
+          <p class="text-sm text-slate-500">総問い合わせ件数</p>
+          <p class="mt-2 text-3xl font-semibold text-slate-900" id="stat-total">-</p>
+        </div>
+        <div class="card">
+          <p class="text-sm text-slate-500">未対応(new)</p>
+          <p class="mt-2 text-3xl font-semibold text-slate-900" id="stat-new">-</p>
+        </div>
+        <div class="card">
+          <p class="text-sm text-slate-500">対応中(doing)</p>
+          <p class="mt-2 text-3xl font-semibold text-slate-900" id="stat-doing">-</p>
+        </div>
+        <div class="card">
+          <p class="text-sm text-slate-500">完了(done)</p>
+          <p class="mt-2 text-3xl font-semibold text-slate-900" id="stat-done">-</p>
+        </div>
+      </div>
+
+      <!-- 今日・今月 -->
+      <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="card">
+          <p class="text-sm text-slate-500">今日の問い合わせ件数</p>
+          <p class="mt-2 text-3xl font-semibold text-brand-600" id="stat-today">-</p>
+        </div>
+        <div class="card">
+          <p class="text-sm text-slate-500">今月の問い合わせ件数</p>
+          <p class="mt-2 text-3xl font-semibold text-brand-600" id="stat-month">-</p>
+        </div>
+      </div>
+
+      <!-- 推移グラフ -->
+      <div class="card mt-4">
+        <p class="text-sm font-semibold text-slate-900">お問い合わせ推移(日別・直近30日)</p>
+        <div class="relative mt-4">
+          <svg id="trend-chart" class="w-full" viewBox="0 0 800 220" preserveAspectRatio="none"></svg>
+          <div id="chart-tooltip" class="pointer-events-none absolute hidden rounded-lg bg-slate-900 px-3 py-1.5 text-xs text-white shadow-lg"></div>
+        </div>
+      </div>
+
+      <!-- 最新5件 -->
+      <div class="card mt-4">
+        <p class="text-sm font-semibold text-slate-900">最新のお問い合わせ(5件)</p>
+        <p id="latest-empty" class="mt-4 hidden text-sm text-slate-500">お問い合わせはまだありません。</p>
+        <div class="mt-4 divide-y divide-slate-100" id="latest-list"></div>
+      </div>
+
+      <!-- システム情報 -->
+      <div class="card mt-4">
+        <p class="text-sm font-semibold text-slate-900">システム情報</p>
+        <dl class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div>
+            <dt class="text-xs text-slate-500">Git Commit</dt>
+            <dd class="mt-1 font-mono text-sm text-slate-900" id="system-commit">-</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-slate-500">デプロイ日時</dt>
+            <dd class="mt-1 text-sm text-slate-900" id="system-built-at">-</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-slate-500">DB接続状態</dt>
+            <dd class="mt-1 flex items-center gap-2 text-sm text-slate-900">
+              <span id="system-db-dot" class="h-2.5 w-2.5 rounded-full bg-slate-300"></span>
+              <span id="system-db-status">-</span>
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </main>
+
+  <template id="latest-item-template">
+    <div class="flex flex-wrap items-center justify-between gap-2 py-3 text-sm">
+      <div>
+        <p class="font-medium text-slate-900" data-field="name"></p>
+        <p class="text-slate-500" data-field="email"></p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600" data-field="status"></span>
+        <span class="text-xs text-slate-400" data-field="created_at"></span>
+      </div>
+    </div>
+  </template>
+
+  <script src="/js/admin-common.js"></script>
+  <script src="/js/admin-dashboard.js"></script>
+</body>
+</html>

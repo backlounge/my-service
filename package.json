@@ -5,7 +5,7 @@
   "description": "中小企業・個人事業主向け業務システム紹介LP",
   "scripts": {
     "dev": "tailwindcss -i ./src/input.css -o ./public/css/style.css --watch",
-    "build": "tailwindcss -i ./src/input.css -o ./public/css/style.css --minify",
+    "build": "tailwindcss -i ./src/input.css -o ./public/css/style.css --minify && node scripts/generate-build-info.mjs",
     "pages:dev": "wrangler pages dev public",
     "deploy": "npm run build && wrangler pages deploy public",
     "d1:create": "wrangler d1 create gyomu_system_lp_db",
