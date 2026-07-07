@@ -47,12 +47,14 @@ CREATE TABLE IF NOT EXISTS files (
   r2_key TEXT NOT NULL UNIQUE,
   uploaded_by INTEGER,
   project_id INTEGER,
+  quote_id INTEGER,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 CREATE INDEX IF NOT EXISTS idx_files_created_at ON files (created_at);
 CREATE INDEX IF NOT EXISTS idx_files_original_name ON files (original_name);
 CREATE INDEX IF NOT EXISTS idx_files_project_id ON files (project_id);
+CREATE INDEX IF NOT EXISTS idx_files_quote_id ON files (quote_id);
 
 CREATE TABLE IF NOT EXISTS projects (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -70,3 +72,51 @@ CREATE TABLE IF NOT EXISTS projects (
 CREATE INDEX IF NOT EXISTS idx_projects_status ON projects (status);
 CREATE INDEX IF NOT EXISTS idx_projects_created_at ON projects (created_at);
 CREATE INDEX IF NOT EXISTS idx_projects_title ON projects (title);
+
+CREATE TABLE IF NOT EXISTS quotes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  quote_number TEXT NOT NULL UNIQUE,
+  project_id INTEGER NOT NULL,
+  status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'sent', 'accepted', 'rejected')),
+  quote_date TEXT NOT NULL DEFAULT (date('now')),
+  valid_until TEXT,
+  assignee TEXT,
+  subtotal INTEGER NOT NULL DEFAULT 0,
+  tax_total INTEGER NOT NULL DEFAULT 0,
+  total INTEGER NOT NULL DEFAULT 0,
+  version INTEGER NOT NULL DEFAULT 1,
+  sent_at TEXT,
+  created_by INTEGER,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_quotes_project_id ON quotes (project_id);
+CREATE INDEX IF NOT EXISTS idx_quotes_status ON quotes (status);
+CREATE INDEX IF NOT EXISTS idx_quotes_quote_number ON quotes (quote_number);
+
+CREATE TABLE IF NOT EXISTS quote_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  quote_id INTEGER NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  product_name TEXT NOT NULL,
+  quantity REAL NOT NULL DEFAULT 1,
+  unit TEXT,
+  unit_price INTEGER NOT NULL DEFAULT 0,
+  discount INTEGER NOT NULL DEFAULT 0,
+  tax_rate REAL NOT NULL DEFAULT 10,
+  note TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_quote_items_quote_id ON quote_items (quote_id);
+
+CREATE TABLE IF NOT EXISTS quote_versions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  quote_id INTEGER NOT NULL,
+  version_number INTEGER NOT NULL,
+  snapshot TEXT NOT NULL,
+  created_by INTEGER,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_quote_versions_quote_id ON quote_versions (quote_id);

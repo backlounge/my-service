@@ -6,6 +6,10 @@ const editForm = document.getElementById("edit-form");
 const saveButton = document.getElementById("save-button");
 const saveStatus = document.getElementById("save-status");
 const deleteButton = document.getElementById("delete-button");
+const createQuoteButton = document.getElementById("create-quote-button");
+const quotesEmpty = document.getElementById("quotes-empty");
+const quoteList = document.getElementById("quote-list");
+const quoteItemTemplate = document.getElementById("quote-item-template");
 
 const uploadSection = document.getElementById("upload-section");
 const dropZone = document.getElementById("drop-zone");
@@ -15,7 +19,63 @@ const filesEmpty = document.getElementById("files-empty");
 const fileGrid = document.getElementById("file-grid");
 const fileCardTemplate = document.getElementById("file-card-template");
 
+const QUOTE_STATUS_LABELS = { draft: "下書き", sent: "送付済み", accepted: "受注", rejected: "却下" };
+
 let currentRole = null;
+
+function formatYen(amount) {
+  return `¥${Math.round(amount).toLocaleString("ja-JP")}`;
+}
+
+function renderQuotes(quotes) {
+  quoteList.innerHTML = "";
+  quotesEmpty.classList.toggle("hidden", quotes.length > 0);
+
+  for (const quote of quotes) {
+    const node = quoteItemTemplate.content.cloneNode(true);
+    const link = node.querySelector('[data-field="quote-number"]');
+    link.textContent = quote.quote_number;
+    link.href = `/admin/quote-detail?id=${quote.id}`;
+
+    const updated = new Date(quote.updated_at.replace(" ", "T") + "Z").toLocaleString("ja-JP");
+    node.querySelector('[data-field="updated"]').textContent = `更新: ${updated}`;
+    node.querySelector('[data-field="status"]').textContent = QUOTE_STATUS_LABELS[quote.status] || quote.status;
+    node.querySelector('[data-field="total"]').textContent = `${formatYen(quote.total)}-`;
+
+    quoteList.appendChild(node);
+  }
+}
+
+async function loadQuotes() {
+  const response = await fetch(`/api/admin/quotes?project_id=${projectId}`, { credentials: "include" });
+  if (!response.ok) return;
+  const result = await response.json();
+  renderQuotes(result.quotes);
+}
+
+createQuoteButton.addEventListener("click", async () => {
+  createQuoteButton.disabled = true;
+  try {
+    const response = await fetch("/api/admin/quotes", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ project_id: Number(projectId) }),
+    });
+    if (response.status === 401) {
+      window.location.href = "/admin/login";
+      return;
+    }
+    const result = await response.json();
+    if (result.success) {
+      window.location.href = `/admin/quote-detail?id=${result.quote.id}`;
+    } else {
+      alert(result.message || "見積の作成に失敗しました。");
+    }
+  } finally {
+    createQuoteButton.disabled = false;
+  }
+});
 
 function setFormDisabled(disabled) {
   for (const el of editForm.elements) {
@@ -270,7 +330,9 @@ dropZone.addEventListener("drop", (event) => {
   setFormDisabled(currentRole !== "admin");
   saveButton.classList.toggle("hidden", currentRole !== "admin");
   deleteButton.classList.toggle("hidden", currentRole !== "admin");
+  createQuoteButton.classList.toggle("hidden", currentRole !== "admin");
   uploadSection.classList.toggle("hidden", currentRole !== "admin");
 
   await loadProject();
+  await loadQuotes();
 })();

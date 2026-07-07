@@ -28,6 +28,26 @@ export const CMS_FIELDS = [
   { key: "blog2-summary", label: "ブログ概要", type: "textarea", maxLength: 300, group: "ブログ2" },
   { key: "blog3-title", label: "ブログタイトル", type: "text", maxLength: 100, group: "ブログ3" },
   { key: "blog3-summary", label: "ブログ概要", type: "textarea", maxLength: 300, group: "ブログ3" },
+
+  // 見積書PDFのヘッダーに使用する会社情報。data-cms属性としてトップページには表示されないが、
+  // /admin/settings の編集画面には他の項目と同じ仕組みで表示される。
+  { key: "company-name", label: "会社名(見積書に表示)", type: "text", maxLength: 100, group: "会社情報(見積書用)" },
+  { key: "company-address", label: "住所(見積書に表示)", type: "textarea", maxLength: 200, group: "会社情報(見積書用)" },
+  { key: "company-registration-number", label: "登録番号(インボイス制度等)", type: "text", maxLength: 40, group: "会社情報(見積書用)" },
+  {
+    key: "company-logo-url",
+    label: "会社ロゴ画像URL(ファイル管理でアップロードしたURLを貼り付け)",
+    type: "text",
+    maxLength: 300,
+    group: "会社情報(見積書用)",
+  },
+  {
+    key: "company-stamp-url",
+    label: "角印画像URL(ファイル管理でアップロードしたURLを貼り付け)",
+    type: "text",
+    maxLength: 300,
+    group: "会社情報(見積書用)",
+  },
 ];
 
 export const CMS_KEYS = CMS_FIELDS.map((field) => field.key);

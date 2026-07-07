@@ -17,10 +17,11 @@ export async function onRequestGet(context) {
   const url = new URL(request.url);
   const q = (url.searchParams.get("q") || "").trim();
   const projectId = url.searchParams.get("project_id");
+  const quoteId = url.searchParams.get("quote_id");
 
   let query = `
     SELECT files.id, files.filename, files.original_name, files.mime_type, files.size,
-           files.r2_key, files.project_id, files.created_at, users.email as uploaded_by_email
+           files.r2_key, files.project_id, files.quote_id, files.created_at, users.email as uploaded_by_email
     FROM files
     LEFT JOIN users ON users.id = files.uploaded_by
   `;
@@ -34,6 +35,10 @@ export async function onRequestGet(context) {
   if (projectId) {
     conditions.push("files.project_id = ?");
     bindings.push(Number(projectId));
+  }
+  if (quoteId) {
+    conditions.push("files.quote_id = ?");
+    bindings.push(Number(quoteId));
   }
   if (conditions.length) {
     query += " WHERE " + conditions.join(" AND ");
@@ -99,6 +104,20 @@ export async function onRequestPost(context) {
     projectId = parsed;
   }
 
+  const rawQuoteId = form.get("quote_id");
+  let quoteId = null;
+  if (rawQuoteId) {
+    const parsed = Number(rawQuoteId);
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+      return json({ success: false, message: "不正な見積IDです。" }, 400);
+    }
+    const quote = await env.DB.prepare("SELECT id FROM quotes WHERE id = ?").bind(parsed).first();
+    if (!quote) {
+      return json({ success: false, message: "対象の見積が見つかりません。" }, 404);
+    }
+    quoteId = parsed;
+  }
+
   try {
     await env.FILES_BUCKET.put(r2Key, file, {
       httpMetadata: { contentType: mimeType },
@@ -111,10 +130,10 @@ export async function onRequestPost(context) {
   let inserted;
   try {
     const result = await env.DB.prepare(
-      `INSERT INTO files (filename, original_name, mime_type, size, r2_key, uploaded_by, project_id, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+      `INSERT INTO files (filename, original_name, mime_type, size, r2_key, uploaded_by, project_id, quote_id, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
     )
-      .bind(safeName, file.name || safeName, mimeType, file.size, r2Key, data.user.id, projectId)
+      .bind(safeName, file.name || safeName, mimeType, file.size, r2Key, data.user.id, projectId, quoteId)
       .run();
     inserted = result.meta.last_row_id;
   } catch (error) {
@@ -134,6 +153,7 @@ export async function onRequestPost(context) {
       size: file.size,
       r2_key: r2Key,
       project_id: projectId,
+      quote_id: quoteId,
       url: fileUrl(r2Key),
     },
   });
