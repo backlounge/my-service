@@ -15,8 +15,9 @@ export async function onRequestPost(context) {
   }
 
   // ハニーポット: 人には見えないフィールドが埋まっていればボットとみなし、
-  // 成功したふりをして実際の保存はスキップする
+  // 成功したふりをして実際の保存はスキップする(DBには書き込まない)
   if ((form.get("botcheck") || "").toString().length > 0) {
+    console.log("[contact] honeypot triggered - skipping DB write, returning fake success");
     return json({ success: true });
   }
 
