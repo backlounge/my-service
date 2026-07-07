@@ -36,34 +36,65 @@ export async function onRequestPost(context) {
   }
 
   const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+  const requestId = crypto.randomUUID();
 
-  const recent = await env.DB.prepare(
-    `SELECT id FROM contacts WHERE ip = ? AND ${RATE_LIMIT_COOLDOWN_CLAUSE} LIMIT 1`
-  )
-    .bind(ip)
-    .first();
-  if (recent) {
+  if (!env.DB) {
+    console.error(`[contact:${requestId}] D1 binding "DB" is not available in this environment.`);
     return json(
-      { success: false, message: "送信間隔が短すぎます。しばらくしてから再度お試しください。" },
-      429
+      { success: false, message: "サーバー側の設定エラーです。時間をおいて再度お試しください。", requestId },
+      500
     );
   }
 
-  const dailyCount = await env.DB.prepare(
-    `SELECT COUNT(*) as count FROM contacts WHERE ip = ? AND ${DAILY_LIMIT_CLAUSE}`
-  )
-    .bind(ip)
-    .first();
-  if (dailyCount && dailyCount.count >= DAILY_LIMIT_MAX) {
-    return json({ success: false, message: "本日の送信上限に達しました。" }, 429);
+  try {
+    const recent = await env.DB.prepare(
+      `SELECT id FROM contacts WHERE ip = ? AND ${RATE_LIMIT_COOLDOWN_CLAUSE} LIMIT 1`
+    )
+      .bind(ip)
+      .first();
+    if (recent) {
+      return json(
+        { success: false, message: "送信間隔が短すぎます。しばらくしてから再度お試しください。" },
+        429
+      );
+    }
+
+    const dailyCount = await env.DB.prepare(
+      `SELECT COUNT(*) as count FROM contacts WHERE ip = ? AND ${DAILY_LIMIT_CLAUSE}`
+    )
+      .bind(ip)
+      .first();
+    if (dailyCount && dailyCount.count >= DAILY_LIMIT_MAX) {
+      return json({ success: false, message: "本日の送信上限に達しました。" }, 429);
+    }
+
+    const insertResult = await env.DB.prepare(
+      `INSERT INTO contacts (name, email, company, message, status, ip, created_at)
+       VALUES (?, ?, ?, ?, 'new', ?, datetime('now'))`
+    )
+      .bind(name, email, company, message, ip)
+      .run();
+
+    if (!insertResult.success || !insertResult.meta || insertResult.meta.changes !== 1) {
+      console.error(
+        `[contact:${requestId}] INSERT did not report success. result=${JSON.stringify(insertResult)}`
+      );
+      return json(
+        { success: false, message: "保存に失敗しました。時間をおいて再度お試しください。", requestId },
+        500
+      );
+    }
+
+    console.log(
+      `[contact:${requestId}] INSERT ok. id=${insertResult.meta.last_row_id} changes=${insertResult.meta.changes}`
+    );
+
+    return json({ success: true });
+  } catch (error) {
+    console.error(`[contact:${requestId}] D1 operation threw: ${error.message}`, error.stack);
+    return json(
+      { success: false, message: "サーバーエラーが発生しました。時間をおいて再度お試しください。", requestId },
+      500
+    );
   }
-
-  await env.DB.prepare(
-    `INSERT INTO contacts (name, email, company, message, status, ip, created_at)
-     VALUES (?, ?, ?, ?, 'new', ?, datetime('now'))`
-  )
-    .bind(name, email, company, message, ip)
-    .run();
-
-  return json({ success: true });
 }
