@@ -217,6 +217,11 @@ async function loadStats() {
   document.getElementById("stat-today").textContent = result.today.toLocaleString("ja-JP");
   document.getElementById("stat-month").textContent = result.thisMonth.toLocaleString("ja-JP");
 
+  document.getElementById("stat-project-total").textContent = result.projects.total.toLocaleString("ja-JP");
+  document.getElementById("stat-project-in-progress").textContent = result.projects.inProgress.toLocaleString("ja-JP");
+  document.getElementById("stat-project-contracted").textContent = result.projects.contracted.toLocaleString("ja-JP");
+  document.getElementById("stat-project-completed").textContent = result.projects.completed.toLocaleString("ja-JP");
+
   renderTrendChart(result.dailyTrend);
   renderLatest(result.latest);
   renderSystemInfo(result.system);

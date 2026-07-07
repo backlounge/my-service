@@ -16,18 +16,27 @@ export async function onRequestGet(context) {
 
   const url = new URL(request.url);
   const q = (url.searchParams.get("q") || "").trim();
+  const projectId = url.searchParams.get("project_id");
 
   let query = `
     SELECT files.id, files.filename, files.original_name, files.mime_type, files.size,
-           files.r2_key, files.created_at, users.email as uploaded_by_email
+           files.r2_key, files.project_id, files.created_at, users.email as uploaded_by_email
     FROM files
     LEFT JOIN users ON users.id = files.uploaded_by
   `;
+  const conditions = [];
   const bindings = [];
 
   if (q) {
-    query += " WHERE files.original_name LIKE ?";
+    conditions.push("files.original_name LIKE ?");
     bindings.push(`%${q}%`);
+  }
+  if (projectId) {
+    conditions.push("files.project_id = ?");
+    bindings.push(Number(projectId));
+  }
+  if (conditions.length) {
+    query += " WHERE " + conditions.join(" AND ");
   }
   query += " ORDER BY files.created_at DESC LIMIT 200";
 
@@ -76,6 +85,20 @@ export async function onRequestPost(context) {
   const r2Key = `${crypto.randomUUID()}-${safeName}`;
   const mimeType = file.type || "application/octet-stream";
 
+  const rawProjectId = form.get("project_id");
+  let projectId = null;
+  if (rawProjectId) {
+    const parsed = Number(rawProjectId);
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+      return json({ success: false, message: "不正な案件IDです。" }, 400);
+    }
+    const project = await env.DB.prepare("SELECT id FROM projects WHERE id = ?").bind(parsed).first();
+    if (!project) {
+      return json({ success: false, message: "対象の案件が見つかりません。" }, 404);
+    }
+    projectId = parsed;
+  }
+
   try {
     await env.FILES_BUCKET.put(r2Key, file, {
       httpMetadata: { contentType: mimeType },
@@ -88,10 +111,10 @@ export async function onRequestPost(context) {
   let inserted;
   try {
     const result = await env.DB.prepare(
-      `INSERT INTO files (filename, original_name, mime_type, size, r2_key, uploaded_by, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, datetime('now'))`
+      `INSERT INTO files (filename, original_name, mime_type, size, r2_key, uploaded_by, project_id, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))`
     )
-      .bind(safeName, file.name || safeName, mimeType, file.size, r2Key, data.user.id)
+      .bind(safeName, file.name || safeName, mimeType, file.size, r2Key, data.user.id, projectId)
       .run();
     inserted = result.meta.last_row_id;
   } catch (error) {
@@ -110,6 +133,7 @@ export async function onRequestPost(context) {
       mime_type: mimeType,
       size: file.size,
       r2_key: r2Key,
+      project_id: projectId,
       url: fileUrl(r2Key),
     },
   });

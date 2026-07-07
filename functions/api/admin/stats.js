@@ -37,6 +37,7 @@ export async function onRequestGet(context) {
       thisMonth: 0,
       latest: [],
       dailyTrend: lastNDates(TREND_DAYS).map((date) => ({ date, count: 0 })),
+      projects: { total: 0, inProgress: 0, contracted: 0, completed: 0 },
       system: { commitSha: null, branch: null, builtAt: null, dbStatus: "error" },
     });
   }
@@ -47,9 +48,10 @@ export async function onRequestGet(context) {
   let thisMonth = 0;
   let latest = [];
   let dailyTrend = lastNDates(TREND_DAYS).map((date) => ({ date, count: 0 }));
+  let projectStats = { total: 0, inProgress: 0, contracted: 0, completed: 0 };
 
   try {
-    const [statusRows, todayRow, monthRow, latestRows, trendRows] = await Promise.all([
+    const [statusRows, todayRow, monthRow, latestRows, trendRows, projectRow] = await Promise.all([
       env.DB.prepare("SELECT status, COUNT(*) as count FROM contacts GROUP BY status").all(),
       env.DB.prepare("SELECT COUNT(*) as count FROM contacts WHERE date(created_at) = date('now')").first(),
       env.DB.prepare(
@@ -63,6 +65,14 @@ export async function onRequestGet(context) {
          WHERE created_at > datetime('now', '-${TREND_DAYS} days')
          GROUP BY day`
       ).all(),
+      env.DB.prepare(
+        `SELECT
+           COUNT(*) as total,
+           COALESCE(SUM(CASE WHEN status NOT IN ('completed', 'cancel') THEN 1 ELSE 0 END), 0) as inProgress,
+           COALESCE(SUM(CASE WHEN status IN ('contract', 'development', 'completed') THEN 1 ELSE 0 END), 0) as contracted,
+           COALESCE(SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END), 0) as completed
+         FROM projects`
+      ).first(),
     ]);
 
     for (const row of statusRows.results) {
@@ -78,6 +88,13 @@ export async function onRequestGet(context) {
 
     const countByDay = Object.fromEntries(trendRows.results.map((r) => [r.day, r.count]));
     dailyTrend = dailyTrend.map(({ date }) => ({ date, count: countByDay[date] || 0 }));
+
+    projectStats = {
+      total: projectRow?.total || 0,
+      inProgress: projectRow?.inProgress || 0,
+      contracted: projectRow?.contracted || 0,
+      completed: projectRow?.completed || 0,
+    };
   } catch (error) {
     console.error(`[admin/stats] D1取得に失敗しました: ${error.message}`);
     dbStatus = "error";
@@ -92,6 +109,7 @@ export async function onRequestGet(context) {
     thisMonth,
     latest,
     dailyTrend,
+    projects: projectStats,
     system: {
       commitSha: buildInfo?.commitSha || null,
       branch: buildInfo?.branch || null,

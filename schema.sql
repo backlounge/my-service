@@ -46,8 +46,27 @@ CREATE TABLE IF NOT EXISTS files (
   size INTEGER NOT NULL,
   r2_key TEXT NOT NULL UNIQUE,
   uploaded_by INTEGER,
+  project_id INTEGER,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 CREATE INDEX IF NOT EXISTS idx_files_created_at ON files (created_at);
 CREATE INDEX IF NOT EXISTS idx_files_original_name ON files (original_name);
+CREATE INDEX IF NOT EXISTS idx_files_project_id ON files (project_id);
+
+CREATE TABLE IF NOT EXISTS projects (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  customer_name TEXT NOT NULL,
+  customer_email TEXT,
+  status TEXT NOT NULL DEFAULT 'new' CHECK (
+    status IN ('new', 'hearing', 'quotation', 'contract', 'development', 'completed', 'cancel')
+  ),
+  memo TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_projects_status ON projects (status);
+CREATE INDEX IF NOT EXISTS idx_projects_created_at ON projects (created_at);
+CREATE INDEX IF NOT EXISTS idx_projects_title ON projects (title);

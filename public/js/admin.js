@@ -36,6 +36,12 @@ function renderContacts(contacts) {
     select.disabled = currentRole !== "admin";
     select.addEventListener("change", () => updateStatus(contact.id, select.value, select));
 
+    const convertButton = node.querySelector('[data-field="convert-button"]');
+    if (currentRole === "admin") {
+      convertButton.classList.remove("hidden");
+      convertButton.addEventListener("click", () => convertToProject(contact.id, convertButton));
+    }
+
     contactList.appendChild(node);
   }
 }
@@ -83,6 +89,38 @@ async function updateStatus(id, status, selectEl) {
     }
   } finally {
     selectEl.disabled = currentRole !== "admin";
+  }
+}
+
+async function convertToProject(contactId, button) {
+  button.disabled = true;
+  button.textContent = "作成中...";
+
+  try {
+    const response = await fetch("/api/admin/projects", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contact_id: contactId }),
+    });
+
+    if (response.status === 401) {
+      redirectToLogin();
+      return;
+    }
+
+    const result = await response.json();
+    if (result.success) {
+      window.location.href = `/admin/project-detail?id=${result.project.id}`;
+    } else {
+      alert(result.message || "案件の作成に失敗しました。");
+      button.disabled = false;
+      button.textContent = "この問い合わせを案件化";
+    }
+  } catch {
+    alert("通信に失敗しました。時間をおいて再度お試しください。");
+    button.disabled = false;
+    button.textContent = "この問い合わせを案件化";
   }
 }
 
