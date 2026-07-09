@@ -24,7 +24,9 @@ export async function onRequestPost(context) {
   const name = (form.get("name") || "").toString().trim();
   const email = (form.get("email") || "").toString().trim();
   const company = (form.get("company") || "").toString().trim();
-  const message = (form.get("message") || "").toString().trim();
+  let message = (form.get("message") || "").toString().trim();
+  // 商品詳細ページから遷移した場合、どの商品についての問い合わせかを本文の先頭に付記する
+  const productName = (form.get("product_name") || "").toString().trim();
 
   if (!name || !email || !message) {
     return json({ success: false, message: "必須項目が入力されていません。" }, 400);
@@ -34,6 +36,9 @@ export async function onRequestPost(context) {
   }
   if (name.length > 100 || email.length > 200 || company.length > 200 || message.length > 4000) {
     return json({ success: false, message: "入力内容が長すぎます。" }, 400);
+  }
+  if (productName) {
+    message = `【対象商品: ${productName.slice(0, 100)}】\n${message}`;
   }
 
   const ip = request.headers.get("CF-Connecting-IP") || "unknown";

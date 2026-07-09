@@ -45,4 +45,69 @@
   .filter-btn.is-active {
     @apply border-brand-600 bg-brand-600 text-white hover:bg-brand-600;
   }
+
+  /* 製品サイト再設計で追加したコンポーネント */
+  .breadcrumb {
+    @apply flex flex-wrap items-center gap-1.5 text-xs text-slate-500;
+  }
+  .breadcrumb a {
+    @apply hover:text-brand-600;
+  }
+  .status-pill {
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold;
+  }
+  .status-pill.is-live {
+    @apply bg-emerald-50 text-emerald-700;
+  }
+  .status-pill.is-prep {
+    @apply bg-amber-50 text-amber-700;
+  }
+  .nav-dropdown-panel {
+    @apply invisible absolute left-0 top-full z-40 mt-2 w-72 -translate-y-1 rounded-2xl border border-slate-100 bg-white p-3 opacity-0 shadow-soft transition;
+  }
+  .nav-has-dropdown:hover .nav-dropdown-panel,
+  .nav-has-dropdown:focus-within .nav-dropdown-panel {
+    @apply visible translate-y-0 opacity-100;
+  }
+  .nav-dropdown-item {
+    @apply flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-slate-700 transition hover:bg-brand-50 hover:text-brand-700;
+  }
+  .product-card {
+    @apply flex flex-col rounded-2xl border border-slate-200 bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:shadow-soft;
+  }
+  .faq-item {
+    @apply rounded-2xl border border-slate-200 bg-white px-6 py-1 open:pb-5 open:shadow-sm;
+  }
+  .faq-item summary {
+    @apply cursor-pointer list-none py-5 text-base font-semibold text-slate-900 marker:content-none;
+  }
+  .faq-item summary::-webkit-details-marker {
+    display: none;
+  }
+  .footer-col-title {
+    @apply text-xs font-semibold uppercase tracking-wider text-slate-400;
+  }
+  .footer-col-link {
+    @apply block py-1 text-sm text-slate-600 hover:text-brand-600;
+  }
+
+  /* ブログ・導入事例の本文(bodyHtml)向けの最小限のタイポグラフィ */
+  .article-body {
+    @apply text-base leading-relaxed text-slate-700;
+  }
+  .article-body p {
+    @apply mb-5;
+  }
+  .article-body h2 {
+    @apply mb-4 mt-10 text-2xl font-bold text-slate-900;
+  }
+  .article-body h3 {
+    @apply mb-3 mt-8 text-lg font-bold text-slate-900;
+  }
+  .article-body ul {
+    @apply mb-5 list-disc space-y-2 pl-6;
+  }
+  .article-body a {
+    @apply text-brand-600 underline underline-offset-2 hover:text-brand-700;
+  }
 }

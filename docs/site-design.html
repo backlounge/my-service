@@ -1,0 +1,782 @@
+<title>業務システム製品サイト 設計書</title>
+
+<style>
+  :root {
+    --bg: #f4f5f2;
+    --surface: #ffffff;
+    --surface-2: #eceeea;
+    --ink: #1b2320;
+    --ink-muted: #5c6863;
+    --ink-faint: #8b958f;
+    --line: #d7dbd6;
+    --line-strong: #b7bfb9;
+    --accent: #2a5d55;
+    --accent-ink: #ffffff;
+    --accent-soft: #e3efec;
+    --accent-soft-line: #bcd6cf;
+    --status-live: #2a5d55;
+    --status-live-soft: #e3efec;
+    --status-prep: #9a6a1f;
+    --status-prep-soft: #f3e9d6;
+    --radius: 3px;
+    --mono: "SFMono-Regular", "Cascadia Code", Consolas, "Liberation Mono", monospace;
+    --sans: "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", "Noto Sans JP", "Segoe UI", system-ui, sans-serif;
+  }
+  :root[data-theme="dark"] {
+    --bg: #121613;
+    --surface: #181d1a;
+    --surface-2: #1f2521;
+    --ink: #edf1ee;
+    --ink-muted: #9aa5a0;
+    --ink-faint: #6b7671;
+    --line: #2a322d;
+    --line-strong: #3a443d;
+    --accent: #6cbba9;
+    --accent-ink: #0b1512;
+    --accent-soft: #1b2b27;
+    --accent-soft-line: #2e463f;
+    --status-live: #6cbba9;
+    --status-live-soft: #1b2b27;
+    --status-prep: #d9a94f;
+    --status-prep-soft: #2c2418;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121613;
+      --surface: #181d1a;
+      --surface-2: #1f2521;
+      --ink: #edf1ee;
+      --ink-muted: #9aa5a0;
+      --ink-faint: #6b7671;
+      --line: #2a322d;
+      --line-strong: #3a443d;
+      --accent: #6cbba9;
+      --accent-ink: #0b1512;
+      --accent-soft: #1b2b27;
+      --accent-soft-line: #2e463f;
+      --status-live: #6cbba9;
+      --status-live-soft: #1b2b27;
+      --status-prep: #d9a94f;
+      --status-prep-soft: #2c2418;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.7;
+    font-size: 15.5px;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); }
+  h1, h2, h3, h4 { text-wrap: balance; font-weight: 700; letter-spacing: -0.01em; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* ---- shell layout ---- */
+  .shell {
+    display: grid;
+    grid-template-columns: 250px minmax(0, 1fr);
+    max-width: 1180px;
+    margin: 0 auto;
+    gap: 0;
+  }
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+  }
+
+  .toc {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 40px 22px 40px 28px;
+    border-right: 1px solid var(--line);
+  }
+  @media (max-width: 900px) {
+    .toc { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--line); padding: 24px 20px; }
+  }
+  .toc-brand { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .toc-brand-sub { font-size: 12px; color: var(--ink-muted); margin-bottom: 28px; }
+  .toc nav { display: flex; flex-direction: column; gap: 2px; }
+  .toc a {
+    display: flex; gap: 10px;
+    text-decoration: none;
+    color: var(--ink-muted);
+    font-size: 13.5px;
+    padding: 7px 8px;
+    border-radius: var(--radius);
+  }
+  .toc a:hover { background: var(--surface-2); color: var(--ink); }
+  .toc a .n { font-family: var(--mono); color: var(--ink-faint); font-size: 12px; padding-top: 1px; }
+
+  main { padding: 40px 40px 120px; min-width: 0; }
+  @media (max-width: 900px) { main { padding: 32px 20px 80px; } }
+
+  /* ---- cover ---- */
+  .cover { padding-bottom: 40px; margin-bottom: 44px; border-bottom: 1px solid var(--line); }
+  .cover h1 { font-size: 30px; margin: 10px 0 8px; }
+  .cover .lede { font-size: 15.5px; color: var(--ink-muted); max-width: 62ch; margin: 0 0 28px; }
+  .cover-meta { display: flex; gap: 22px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-faint); font-family: var(--mono); }
+
+  .req-table { margin-top: 28px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .req-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 9px 14px; font-size: 13px; border-top: 1px solid var(--line); }
+  .req-row:first-child { border-top: none; background: var(--surface-2); font-weight: 700; }
+  .req-row:not(:first-child):nth-child(odd) { background: var(--surface); }
+  .req-jump { font-family: var(--mono); color: var(--accent); text-decoration: none; white-space: nowrap; }
+
+  /* ---- sections ---- */
+  section.block { margin-bottom: 68px; scroll-margin-top: 24px; }
+  .block-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; }
+  .block-num { font-family: var(--mono); font-size: 13px; color: var(--ink-faint); }
+  .block h2 { font-size: 22px; margin: 0; }
+  .block-sub { color: var(--ink-muted); font-size: 14px; max-width: 68ch; margin: 10px 0 26px; }
+
+  /* ---- sitemap tree ---- */
+  .tree { font-family: var(--mono); font-size: 13px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px 26px; overflow-x: auto; }
+  .tree ul { list-style: none; margin: 0; padding-left: 22px; border-left: 1px dashed var(--line-strong); }
+  .tree > ul { padding-left: 0; border-left: none; }
+  .tree li { position: relative; padding: 5px 0 5px 18px; }
+  .tree li::before { content: ""; position: absolute; left: 0; top: 16px; width: 14px; height: 1px; background: var(--line-strong); }
+  .tree .path { color: var(--ink); }
+  .tree .label { color: var(--ink-muted); font-family: var(--sans); margin-left: 10px; }
+  .tag { display: inline-block; font-family: var(--sans); font-size: 10.5px; font-weight: 700; padding: 1px 7px; border-radius: 99px; margin-left: 8px; vertical-align: 1px; }
+  .tag.live { background: var(--status-live-soft); color: var(--status-live); }
+  .tag.prep { background: var(--status-prep-soft); color: var(--status-prep); }
+  .tag.new { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-soft-line); }
+
+  /* ---- role cards ---- */
+  .role-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+  .role-card { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 20px 22px; }
+  .role-card h3 { font-size: 15px; margin: 0 0 3px; }
+  .role-card .path { font-family: var(--mono); font-size: 11.5px; color: var(--ink-faint); margin-bottom: 14px; display: block; }
+  .role-card dl { margin: 0; }
+  .role-card dt { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); margin-top: 12px; }
+  .role-card dt:first-of-type { margin-top: 0; }
+  .role-card dd { margin: 3px 0 0; font-size: 13px; color: var(--ink-muted); }
+
+  /* ---- nav diagrams ---- */
+  .navdiagram { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 24px; margin-bottom: 16px; }
+  .navdiagram .title { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+  .navbar-mock { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 12px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); }
+  .navbar-mock .logo { font-weight: 700; font-size: 13px; margin-right: auto; }
+  .navchip { font-size: 12.5px; padding: 6px 10px; border-radius: var(--radius); border: 1px dashed var(--line-strong); color: var(--ink-muted); position: relative; }
+  .navchip.cta { background: var(--accent); color: var(--accent-ink); border-style: solid; border-color: var(--accent); font-weight: 700; }
+  .navchip .drop { position: absolute; top: 100%; left: 0; margin-top: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px; font-size: 11px; white-space: nowrap; display: none; }
+  .foot-mock { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 20px; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); }
+  .foot-mock .col-title { font-family: var(--mono); font-size: 10.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .foot-mock .col-item { font-size: 12.5px; color: var(--ink-muted); padding: 3px 0; }
+
+  /* ---- url table ---- */
+  .url-table-wrap { border: 1px solid var(--line); border-radius: var(--radius); overflow-x: auto; }
+  table.urls { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 640px; }
+  table.urls th { text-align: left; font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); background: var(--surface-2); padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  table.urls td { padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--ink-muted); }
+  table.urls tr:last-child td { border-bottom: none; }
+  table.urls td.path { font-family: var(--mono); color: var(--ink); white-space: nowrap; }
+  table.urls td.page { color: var(--ink); font-weight: 600; }
+  .idx-yes { color: var(--status-live); font-weight: 700; }
+  .idx-no { color: var(--ink-faint); }
+
+  /* ---- wireframes ---- */
+  .wire-frame { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 20px; overflow-x: auto; }
+  .wire-canvas { width: 100%; min-width: 640px; border: 1px solid var(--line-strong); background: var(--bg); }
+  .wblock { border: 1px dashed var(--line-strong); margin: 10px; padding: 14px 16px; position: relative; background: var(--surface); }
+  .wblock > .wlabel { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-faint); margin-bottom: 8px; display: block; }
+  .wblock .wnote { font-size: 12px; color: var(--ink-muted); }
+  .wrow { display: flex; gap: 10px; }
+  .wrow > * { flex: 1; }
+  .wchip { display: inline-block; font-size: 11px; border: 1px solid var(--line-strong); border-radius: 99px; padding: 2px 9px; margin: 2px 4px 2px 0; color: var(--ink-muted); }
+  .wchip.acc { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+  .wtitle-bar { height: 10px; width: 60%; background: var(--line-strong); border-radius: 2px; margin-bottom: 8px; }
+  .wtitle-bar.lg { height: 16px; width: 70%; }
+  .wtitle-bar.sm { height: 8px; width: 40%; }
+  .wcard { border: 1px solid var(--line); padding: 10px; background: var(--bg); font-size: 11px; color: var(--ink-faint); }
+  .wgrid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .wgrid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .wgrid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  @media (max-width: 640px) { .wgrid3, .wgrid4 { grid-template-columns: repeat(2, 1fr); } }
+
+  .callout {
+    border: 1px solid var(--accent-soft-line);
+    background: var(--accent-soft);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    font-size: 13.5px;
+    color: var(--ink);
+    margin: 22px 0;
+  }
+  .callout .eyebrow { display: block; margin-bottom: 8px; }
+  .callout ul { margin: 8px 0 0; padding-left: 20px; }
+  .callout li { margin: 4px 0; }
+
+  .note-add {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    background: var(--status-prep-soft);
+    color: var(--status-prep);
+    padding: 1px 7px;
+    border-radius: 99px;
+    margin-left: 8px;
+    vertical-align: 1px;
+  }
+
+  footer.doc-end { border-top: 1px solid var(--line); padding-top: 20px; margin-top: 60px; font-size: 12px; color: var(--ink-faint); font-family: var(--mono); }
+</style>
+
+<div class="shell">
+  <aside class="toc">
+    <div class="toc-brand">業務システム製品サイト</div>
+    <div class="toc-brand-sub">サイト設計書 v1</div>
+    <nav>
+      <a href="#cover"><span class="n">00</span> 概要・要件対応</a>
+      <a href="#sitemap"><span class="n">01</span> サイトマップ</a>
+      <a href="#roles"><span class="n">02</span> 各ページの役割</a>
+      <a href="#nav"><span class="n">03</span> ナビゲーション構成</a>
+      <a href="#urls"><span class="n">04</span> URL設計</a>
+      <a href="#wire-top"><span class="n">05</span> トップページ ワイヤーフレーム</a>
+      <a href="#wire-product"><span class="n">06</span> 商品詳細ページ ワイヤーフレーム</a>
+      <a href="#seo"><span class="n">07</span> SEO・AI検索方針</a>
+      <a href="#growth"><span class="n">08</span> 拡張性・管理画面分離</a>
+    </nav>
+  </aside>
+
+  <main>
+    <section class="cover" id="cover">
+      <div class="eyebrow">Site Architecture — Draft for Review</div>
+      <h1>業務システム製品サイト 設計書</h1>
+      <p class="lede">
+        「業務システム紹介LP」を、単発の会社紹介ページから、複数の業務システム製品を扱う
+        製品サイトへ再設計する。今回は設計のみ。実装はこの設計の確定後に着手する。
+      </p>
+      <div class="cover-meta">
+        <span>対象: 業務システム紹介LP</span>
+        <span>現行商品: 見積管理システム(販売中)</span>
+        <span>準備中: 顧客管理 / 在庫管理 / 予約管理</span>
+      </div>
+
+      <div class="req-table">
+        <div class="req-row"><span>指定要件</span><span>対応セクション</span></div>
+        <div class="req-row"><span>商品が増えても作り直さない構成</span><a class="req-jump" href="#growth">08 拡張性</a></div>
+        <div class="req-row"><span>SEOを意識した構造</span><a class="req-jump" href="#seo">07 SEO方針</a></div>
+        <div class="req-row"><span>AI検索でも理解しやすい構造</span><a class="req-jump" href="#seo">07 SEO方針</a></div>
+        <div class="req-row"><span>トップページの役割</span><a class="req-jump" href="#roles">02 役割定義</a></div>
+        <div class="req-row"><span>商品一覧ページ</span><a class="req-jump" href="#roles">02 役割定義</a></div>
+        <div class="req-row"><span>商品詳細ページ</span><a class="req-jump" href="#roles">02 役割定義</a></div>
+        <div class="req-row"><span>ブログ構成</span><a class="req-jump" href="#roles">02 役割定義</a></div>
+        <div class="req-row"><span>FAQ構成</span><a class="req-jump" href="#roles">02 役割定義</a></div>
+        <div class="req-row"><span>導入事例構成</span><a class="req-jump" href="#roles">02 役割定義</a></div>
+        <div class="req-row"><span>お問い合わせ導線</span><a class="req-jump" href="#roles">02 役割定義</a></div>
+        <div class="req-row"><span>将来の購入導線</span><a class="req-jump" href="#wire-product">06 商品詳細</a></div>
+        <div class="req-row"><span>管理画面との役割分離</span><a class="req-jump" href="#growth">08 管理画面分離</a></div>
+      </div>
+    </section>
+
+    <!-- 01 サイトマップ -->
+    <section class="block" id="sitemap">
+      <div class="block-head"><span class="block-num">01</span><h2>サイトマップ</h2></div>
+      <p class="block-sub">
+        商品ページは <code>/products/[商品スラッグ]</code> の1パターンに統一。商品が増えても
+        ページを新設計せず、同じテンプレートにコンテンツを追加するだけで拡張できる。
+      </p>
+
+      <div class="tree">
+        <ul>
+          <li><span class="path">/</span><span class="label">トップページ</span></li>
+          <li><span class="path">/about</span><span class="label">あなたについて(信頼)</span></li>
+          <li><span class="path">/products</span><span class="label">商品一覧</span>
+            <ul>
+              <li><span class="path">/products/quote-management</span><span class="label">見積管理システム</span><span class="tag live">販売中</span></li>
+              <li><span class="path">/products/customer-management</span><span class="label">顧客管理システム</span><span class="tag prep">準備中</span></li>
+              <li><span class="path">/products/inventory-management</span><span class="label">在庫管理システム</span><span class="tag prep">準備中</span></li>
+              <li><span class="path">/products/reservation-management</span><span class="label">予約管理システム</span><span class="tag prep">準備中</span></li>
+            </ul>
+          </li>
+          <li><span class="path">/case-studies</span><span class="label">導入事例</span>
+            <ul><li><span class="path">/case-studies/[slug]</span><span class="label">個別事例</span></li></ul>
+          </li>
+          <li><span class="path">/blog</span><span class="label">ブログ</span>
+            <ul>
+              <li><span class="path">/blog/[slug]</span><span class="label">個別記事</span></li>
+              <li><span class="path">/blog/category/[category]</span><span class="label">カテゴリ一覧</span><span class="tag new">拡張用</span></li>
+            </ul>
+          </li>
+          <li><span class="path">/faq</span><span class="label">FAQ(全体)</span></li>
+          <li><span class="path">/contact</span><span class="label">お問い合わせ</span></li>
+          <li><span class="path">/legal</span><span class="label">特定商取引法に基づく表記</span><span class="tag new">追加提案</span></li>
+          <li><span class="path">/privacy</span><span class="label">プライバシーポリシー</span><span class="tag new">追加提案</span></li>
+          <li><span class="path">/admin/*</span><span class="label">管理画面(非公開・noindex/自社業務専用)</span></li>
+        </ul>
+      </div>
+
+      <div class="callout">
+        <span class="eyebrow">追加提案について</span>
+        <code>/legal</code>・<code>/privacy</code> は指定にはなかったが、自社サイトで購入導線を
+        持つ(将来決済を含む)以上、特定商取引法に基づく表記とプライバシーポリシーは日本の法令上
+        実質必須になる。今のうちにURLの置き場所だけ確保しておくと、購入導線の実装時に慌てない。
+      </div>
+    </section>
+
+    <!-- 02 各ページの役割 -->
+    <section class="block" id="roles">
+      <div class="block-head"><span class="block-num">02</span><h2>各ページの役割</h2></div>
+      <p class="block-sub">
+        すべてのページに「誰のためか」「何をさせたいか」を1つに絞って定義する。迷ったら
+        このページの役割に立ち返って判断する。
+      </p>
+
+      <div class="role-grid">
+        <div class="role-card">
+          <h3>トップページ</h3>
+          <span class="path">/</span>
+          <dl>
+            <dt>役割</dt><dd>「何を売っている会社か」を最短で伝え、商品一覧かお問い合わせへ橋渡しする玄関</dd>
+            <dt>主要要素</dt><dd>ポジショニング一文、商品ラインナップの予告、選ばれる理由、事例・ブログの入口</dd>
+            <dt>CTA</dt><dd>商品一覧を見る(主) / お問い合わせ(副)</dd>
+          </dl>
+        </div>
+        <div class="role-card">
+          <h3>あなたについて</h3>
+          <span class="path">/about</span>
+          <dl>
+            <dt>役割</dt><dd>「個人/小規模開発者から買って大丈夫か」という不安を解消する信頼形成ページ</dd>
+            <dt>主要要素</dt><dd>開発の背景・スタンス、対応できること/できないことの誠実な明示、連絡先の実在感</dd>
+            <dt>CTA</dt><dd>商品一覧・お問い合わせ</dd>
+          </dl>
+        </div>
+        <div class="role-card">
+          <h3>商品一覧</h3>
+          <span class="path">/products</span>
+          <dl>
+            <dt>役割</dt><dd>全商品を一望させ、自分に合うものへ最短で振り分けるハブ</dd>
+            <dt>主要要素</dt><dd>商品カード(名称・一言・対象業種・ステータス)、比較しやすい共通フォーマット</dd>
+            <dt>拡張性</dt><dd>商品追加 = カード1件追加のみ。ページ構造は変更不要</dd>
+          </dl>
+        </div>
+        <div class="role-card">
+          <h3>商品詳細</h3>
+          <span class="path">/products/[slug]</span>
+          <dl>
+            <dt>役割</dt><dd>その商品単体の「商品ページ」。比較検討から購入判断までを1ページで完結させる</dd>
+            <dt>主要要素</dt><dd>課題提起、機能、スクリーンショット、含まれないものの明示、価格、商品別FAQ</dd>
+            <dt>CTA</dt><dd>お問い合わせ(現状) → 将来的に購入ボタンへ差し替え</dd>
+          </dl>
+        </div>
+        <div class="role-card">
+          <h3>ブログ</h3>
+          <span class="path">/blog, /blog/[slug]</span>
+          <dl>
+            <dt>役割</dt><dd>顧客がまだ商品名を知らない検索段階から接触するSEO入口</dd>
+            <dt>主要要素</dt><dd>業務課題ベースの記事(例:「見積書 作成 時間 かかる」)、記事末に関連商品への内部リンク</dd>
+            <dt>SEO観点</dt><dd>ロングテールキーワードの受け皿。商品ページへの内部リンク経路</dd>
+          </dl>
+        </div>
+        <div class="role-card">
+          <h3>FAQ</h3>
+          <span class="path">/faq</span>
+          <dl>
+            <dt>役割</dt><dd>購入前の不安・疑問を検索1回で解消し、問い合わせ負荷を下げる</dd>
+            <dt>構成</dt><dd>全社共通FAQ(購入方法・サポート範囲・請求書対応等)を本ページに、商品固有FAQは各商品詳細ページ側に置く二層構成</dd>
+            <dt>AI検索観点</dt><dd>Q&amp;A形式そのものが引用されやすい。FAQPage構造化データと相性が良い</dd>
+          </dl>
+        </div>
+        <div class="role-card">
+          <h3>導入事例</h3>
+          <span class="path">/case-studies</span>
+          <dl>
+            <dt>役割</dt><dd>「実際に使われている」という社会的証明</dd>
+            <dt>構成</dt><dd>業種・課題・導入商品・効果を型で統一。実績が揃うまでは「想定活用シーン」として業種別の使い方例から始めてよい</dd>
+            <dt>CTA</dt><dd>該当する商品の詳細ページへ誘導</dd>
+          </dl>
+        </div>
+        <div class="role-card">
+          <h3>お問い合わせ</h3>
+          <span class="path">/contact</span>
+          <dl>
+            <dt>役割</dt><dd>現状唯一の購入導線(問い合わせ→個別ZIP送付)。将来は購入導線と役割分担</dd>
+            <dt>主要要素</dt><dd>「どの商品についてか」を選ばせるフィールド。商品詳細ページからは商品名を引き継いで遷移</dd>
+            <dt>設計方針</dt><dd>汎用の問い合わせ窓口ではなく、商品ページごとの文脈付き問い合わせとして設計する</dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 ナビゲーション構成 -->
+    <section class="block" id="nav">
+      <div class="block-head"><span class="block-num">03</span><h2>ナビゲーション構成</h2></div>
+      <p class="block-sub">ヘッダーは判断導線、フッターは網羅性の担保。役割を分けて重複を許容する。</p>
+
+      <div class="navdiagram">
+        <div class="title">ヘッダー(全ページ共通)</div>
+        <div class="navbar-mock">
+          <span class="logo">[ロゴ]</span>
+          <span class="navchip">商品一覧 ▾
+            <span class="drop" style="display:block;">
+              見積管理システム<br>顧客管理システム(準備中)<br>在庫管理システム(準備中)<br>予約管理システム(準備中)
+            </span>
+          </span>
+          <span class="navchip">導入事例</span>
+          <span class="navchip">ブログ</span>
+          <span class="navchip">FAQ</span>
+          <span class="navchip">私たちについて</span>
+          <span class="navchip cta">お問い合わせ</span>
+        </div>
+      </div>
+
+      <div class="navdiagram">
+        <div class="title">フッター(全ページ共通)</div>
+        <div class="foot-mock">
+          <div>
+            <div class="col-title">商品</div>
+            <div class="col-item">見積管理システム</div>
+            <div class="col-item">顧客管理システム(準備中)</div>
+            <div class="col-item">在庫管理システム(準備中)</div>
+            <div class="col-item">予約管理システム(準備中)</div>
+          </div>
+          <div>
+            <div class="col-title">コンテンツ</div>
+            <div class="col-item">ブログ</div>
+            <div class="col-item">導入事例</div>
+            <div class="col-item">FAQ</div>
+          </div>
+          <div>
+            <div class="col-title">会社</div>
+            <div class="col-item">私たちについて</div>
+            <div class="col-item">お問い合わせ</div>
+          </div>
+          <div>
+            <div class="col-title">規約</div>
+            <div class="col-item">特定商取引法に基づく表記</div>
+            <div class="col-item">プライバシーポリシー</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 URL設計 -->
+    <section class="block" id="urls">
+      <div class="block-head"><span class="block-num">04</span><h2>URL設計</h2></div>
+      <p class="block-sub">
+        商品スラッグは英語表記に統一(<code>quote-management</code> 等)。日本語URLの文字化け・
+        共有時の見た目の悪さを避け、商品追加時も同じ命名規則をなぞるだけでよい。
+      </p>
+
+      <div class="url-table-wrap">
+        <table class="urls">
+          <thead><tr><th>パス</th><th>ページ</th><th>index</th><th>備考</th></tr></thead>
+          <tbody>
+            <tr><td class="path">/</td><td class="page">トップページ</td><td class="idx-yes">index</td><td>主要キーワード・ブランド名を受ける</td></tr>
+            <tr><td class="path">/about</td><td class="page">あなたについて</td><td class="idx-yes">index</td><td>指名検索・信頼系キーワード</td></tr>
+            <tr><td class="path">/products</td><td class="page">商品一覧</td><td class="idx-yes">index</td><td>「業務システム 比較」等の受け皿</td></tr>
+            <tr><td class="path">/products/quote-management</td><td class="page">見積管理システム詳細</td><td class="idx-yes">index</td><td>商品名・課題系ロングテールの主戦場</td></tr>
+            <tr><td class="path">/products/customer-management</td><td class="page">顧客管理システム(準備中)</td><td class="idx-no">noindex</td><td>公開後にindex化</td></tr>
+            <tr><td class="path">/products/inventory-management</td><td class="page">在庫管理システム(準備中)</td><td class="idx-no">noindex</td><td>公開後にindex化</td></tr>
+            <tr><td class="path">/products/reservation-management</td><td class="page">予約管理システム(準備中)</td><td class="idx-no">noindex</td><td>公開後にindex化</td></tr>
+            <tr><td class="path">/case-studies</td><td class="page">導入事例一覧</td><td class="idx-yes">index</td><td>業種別キーワード</td></tr>
+            <tr><td class="path">/case-studies/[slug]</td><td class="page">個別事例</td><td class="idx-yes">index</td><td>slugは業種+商品名ベース</td></tr>
+            <tr><td class="path">/blog</td><td class="page">ブログ一覧</td><td class="idx-yes">index</td><td></td></tr>
+            <tr><td class="path">/blog/[slug]</td><td class="page">個別記事</td><td class="idx-yes">index</td><td>ロングテールSEOの主力</td></tr>
+            <tr><td class="path">/faq</td><td class="page">FAQ</td><td class="idx-yes">index</td><td>FAQPage構造化データ</td></tr>
+            <tr><td class="path">/contact</td><td class="page">お問い合わせ</td><td class="idx-yes">index</td><td><code>?product=</code> で商品文脈を引き継ぐ</td></tr>
+            <tr><td class="path">/legal</td><td class="page">特定商取引法に基づく表記</td><td class="idx-no">noindex</td><td>法令対応・追加提案</td></tr>
+            <tr><td class="path">/privacy</td><td class="page">プライバシーポリシー</td><td class="idx-no">noindex</td><td>法令対応・追加提案</td></tr>
+            <tr><td class="path">/admin/*</td><td class="page">管理画面</td><td class="idx-no">noindex</td><td>既存実装・認証必須</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 05 トップページ ワイヤーフレーム -->
+    <section class="block" id="wire-top">
+      <div class="block-head"><span class="block-num">05</span><h2>トップページ ワイヤーフレーム</h2></div>
+      <p class="block-sub">上から順に「何をしている会社か → 何を売っているか → 信じていいか → 次の一歩」の流れ。</p>
+
+      <div class="wire-frame">
+        <div class="wire-canvas">
+
+          <div class="wblock">
+            <span class="wlabel">Header</span>
+            <div class="wrow">
+              <span class="wchip">ロゴ</span>
+              <span class="wchip">商品一覧 ▾</span>
+              <span class="wchip">導入事例</span>
+              <span class="wchip">ブログ</span>
+              <span class="wchip">FAQ</span>
+              <span class="wchip acc">お問い合わせ</span>
+            </div>
+          </div>
+
+          <div class="wblock">
+            <span class="wlabel">Hero — ポジショニング文(AI検索が抜き出す一文)</span>
+            <div class="wtitle-bar lg"></div>
+            <div class="wtitle-bar" style="width:85%"></div>
+            <div class="wtitle-bar sm"></div>
+            <div class="wrow" style="margin-top:12px;">
+              <span class="wchip acc">商品一覧を見る</span>
+              <span class="wchip">お問い合わせ</span>
+            </div>
+          </div>
+
+          <div class="wblock">
+            <span class="wlabel">信頼シグナル(帯)</span>
+            <div class="wrow">
+              <span class="wcard">買い切り・月額なし</span>
+              <span class="wcard">自社Cloudflareに設置</span>
+              <span class="wcard">個人事業主〜中小企業向け</span>
+            </div>
+          </div>
+
+          <div class="wblock">
+            <span class="wlabel">商品ラインナップ(/productsへの予告・4カード)</span>
+            <div class="wgrid4">
+              <div class="wcard">見積管理<br>システム<br><span class="wchip acc" style="margin-top:6px;">販売中</span></div>
+              <div class="wcard">顧客管理<br>システム<br><span class="wchip" style="margin-top:6px;">準備中</span></div>
+              <div class="wcard">在庫管理<br>システム<br><span class="wchip" style="margin-top:6px;">準備中</span></div>
+              <div class="wcard">予約管理<br>システム<br><span class="wchip" style="margin-top:6px;">準備中</span></div>
+            </div>
+          </div>
+
+          <div class="wblock">
+            <span class="wlabel">選ばれる理由(4項目)</span>
+            <div class="wgrid4">
+              <div class="wcard">買い切り</div>
+              <div class="wcard">自社所有・自社運用</div>
+              <div class="wcard">導入手順書つき</div>
+              <div class="wcard">含まれない機能も明記</div>
+            </div>
+          </div>
+
+          <div class="wblock">
+            <span class="wlabel">導入事例プレビュー(2〜3件 → /case-studiesへ)</span>
+            <div class="wgrid3">
+              <div class="wcard">業種A の事例</div>
+              <div class="wcard">業種B の事例</div>
+              <div class="wcard">業種C の事例</div>
+            </div>
+          </div>
+
+          <div class="wblock">
+            <span class="wlabel">ブログ最新記事(内部リンク強化 → /blogへ)</span>
+            <div class="wgrid3">
+              <div class="wcard">記事タイトル</div>
+              <div class="wcard">記事タイトル</div>
+              <div class="wcard">記事タイトル</div>
+            </div>
+          </div>
+
+          <div class="wblock">
+            <span class="wlabel">FAQ抜粋(2〜3問 → /faqへ)</span>
+            <div class="wnote">Q. 買い切りとはどういうことですか / Q. サポート範囲は?</div>
+          </div>
+
+          <div class="wblock">
+            <span class="wlabel">最終CTA</span>
+            <div class="wrow"><span class="wchip acc">商品一覧を見る</span><span class="wchip">お問い合わせ</span></div>
+          </div>
+
+          <div class="wblock">
+            <span class="wlabel">Footer</span>
+            <div class="wnote">商品 / コンテンツ / 会社 / 規約(4カラム)</div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 商品詳細ページ ワイヤーフレーム -->
+    <section class="block" id="wire-product">
+      <div class="block-head"><span class="block-num">06</span><h2>商品詳細ページ ワイヤーフレーム</h2></div>
+      <p class="block-sub">
+        例: <code>/products/quote-management</code>。全商品共通のテンプレート
+        (「準備中」商品は本文セクションを非表示にし、Heroのみで案内する簡易版になる)。
+      </p>
+
+      <div class="wire-frame">
+        <div class="wire-canvas">
+
+          <div class="wblock">
+            <span class="wlabel">Header + パンくず</span>
+            <div class="wnote">ホーム &gt; 商品一覧 &gt; 見積管理システム</div>
+          </div>
+
+          <div class="wblock">
+            <span class="wlabel">Hero</span>
+            <div class="wrow">
+              <span class="wchip acc">販売中</span>
+              <span class="wchip">買い切り</span>
+            </div>
+            <div class="wtitle-bar lg" style="margin-top:10px;"></div>
+            <div class="wtitle-bar" style="width:75%"></div>
+            <div class="wrow" style="margin-top:12px;">
+              <span class="wchip acc">この商品について問い合わせる</span>
+              <span class="wchip">資料を見る</span>
+            </div>
+          </div>
+
+          <div class="wblock">
+            <span class="wlabel">こんな課題ありませんか(課題提起)</span>
+            <div class="wgrid3">
+              <div class="wcard">見積書を毎回作り直す</div>
+              <div class="wcard">顧客情報がバラバラ</div>
+              <div class="wcard">案件の進捗が見えない</div>
+            </div>
+          </div>
+
+          <div class="wblock">
+            <span class="wlabel">できること(機能一覧)</span>
+            <div class="wgrid3">
+              <div class="wcard">顧客管理</div>
+              <div class="wcard">案件管理</div>
+              <div class="wcard">見積書自動計算</div>
+              <div class="wcard">PDF出力</div>
+              <div class="wcard">変更履歴</div>
+              <div class="wcard">権限管理</div>
+            </div>
+          </div>
+
+          <div class="wblock">
+            <span class="wlabel">スクリーンショット・紹介動画</span>
+            <div class="wgrid3">
+              <div class="wcard" style="aspect-ratio:16/10;">画面イメージ</div>
+              <div class="wcard" style="aspect-ratio:16/10;">画面イメージ</div>
+              <div class="wcard" style="aspect-ratio:16/10;">動画(60〜90秒)</div>
+            </div>
+          </div>
+
+          <div class="wblock">
+            <span class="wlabel">含まれないもの(誠実な開示)</span>
+            <div class="wnote">メール自動送信・決済機能・マルチテナント対応 等を明記</div>
+          </div>
+
+          <div class="wblock">
+            <span class="wlabel">動作環境・導入の流れ(簡易版)</span>
+            <div class="wnote">Cloudflareアカウント / Node.js / 導入7ステップの要約 → 詳細はREADME</div>
+          </div>
+
+          <div class="wblock">
+            <span class="wlabel">価格・買い切りの説明</span>
+            <div class="wrow">
+              <div class="wcard" style="flex:2;">価格表示 + 買い切りの説明文</div>
+              <span class="wchip acc" style="align-self:center;">
+                今は問い合わせ制 <span class="note-add">将来: 購入ボタン</span>
+              </span>
+            </div>
+          </div>
+
+          <div class="wblock">
+            <span class="wlabel">この商品のFAQ(商品固有)</span>
+            <div class="wnote">Q. 複数人で使えますか / Q. スマホ対応は?</div>
+          </div>
+
+          <div class="wblock">
+            <span class="wlabel">関連コンテンツ(内部リンク)</span>
+            <div class="wgrid2">
+              <div class="wcard">関連ブログ記事</div>
+              <div class="wcard">関連導入事例</div>
+            </div>
+          </div>
+
+          <div class="wblock">
+            <span class="wlabel">最終CTA</span>
+            <div class="wrow"><span class="wchip acc">この商品について問い合わせる</span></div>
+          </div>
+
+          <div class="wblock">
+            <span class="wlabel">Footer</span>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 SEO / AI検索方針 -->
+    <section class="block" id="seo">
+      <div class="block-head"><span class="block-num">07</span><h2>SEO・AI検索方針</h2></div>
+      <p class="block-sub">
+        検索エンジンにもAI検索(生成AIの回答エンジン)にも「事実として抜き出しやすい」形で
+        情報を置くことを優先する。デザインを凝るより先に、構造で理解させる。
+      </p>
+
+      <div class="role-grid">
+        <div class="role-card">
+          <h3>ポジショニング文</h3>
+          <dl>
+            <dt>方針</dt><dd>トップと各商品詳細ページの冒頭に「誰向けに・何を・どう提供するか」を1文で明示する。画像やスライドではなく、読み上げ可能なテキストとして置く</dd>
+          </dl>
+        </div>
+        <div class="role-card">
+          <h3>見出し構造</h3>
+          <dl>
+            <dt>方針</dt><dd>h1は1ページ1つ。h2=セクション、h3=項目 の階層を全ページで厳守し、見出しだけ読んでも内容が追える状態にする</dd>
+          </dl>
+        </div>
+        <div class="role-card">
+          <h3>構造化データ</h3>
+          <dl>
+            <dt>方針</dt><dd>Organization(全ページ)、SoftwareApplication + Offer(商品詳細)、FAQPage(FAQ・商品別FAQ)、BreadcrumbList(下層ページ)、Article(ブログ)を実装する</dd>
+          </dl>
+        </div>
+        <div class="role-card">
+          <h3>内部リンク設計</h3>
+          <dl>
+            <dt>方針</dt><dd>ブログ記事・導入事例は必ず関連する商品詳細ページへリンクし、商品詳細ページも関連記事・事例へ戻す。孤立ページを作らない</dd>
+          </dl>
+        </div>
+        <div class="role-card">
+          <h3>Q&amp;A形式の徹底</h3>
+          <dl>
+            <dt>方針</dt><dd>FAQは質問文をそのまま見出し(h3)にする。生成AIが「そのまま回答として使える」形を意識する</dd>
+          </dl>
+        </div>
+        <div class="role-card">
+          <h3>含まれない機能の明記</h3>
+          <dl>
+            <dt>方針</dt><dd>できることだけでなく「できないこと」も明文化する。これは既存の販売資料でも徹底している方針で、誠実さがAI検索・人間どちらの信頼度にも効く</dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <!-- 08 拡張性・管理画面分離 -->
+    <section class="block" id="growth">
+      <div class="block-head"><span class="block-num">08</span><h2>拡張性・管理画面との役割分離</h2></div>
+
+      <div class="callout">
+        <span class="eyebrow">商品追加時にやること</span>
+        <ul>
+          <li><code>/products/[新スラッグ]</code> を既存テンプレートで1ページ追加</li>
+          <li><code>/products</code> 一覧にカードを1件追加</li>
+          <li>ヘッダー・フッターの商品リストに1行追加</li>
+          <li>ページ構造・URL設計・ナビ構成そのものは変更しない</li>
+        </ul>
+      </div>
+
+      <div class="callout">
+        <span class="eyebrow">管理画面(/admin)との関係</span>
+        <ul>
+          <li><code>/admin</code> は自社の問い合わせ・案件・見積を管理する社内業務ツールであり、
+            この製品サイトの「訪問者」からは完全に不可視(noindex・認証必須)</li>
+          <li>商品を購入した顧客がログインする場所ではない。顧客は手順書に従って
+            <strong>自分のCloudflareアカウントに自分で設置</strong>するため、この会社の
+            管理画面に触れることはない</li>
+          <li>将来、自社サイト内で決済を完結させる場合も、決済・注文管理は
+            <code>/admin</code> 側に機能追加する形を想定し、公開サイトの構造とは分離したまま拡張する</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer class="doc-end">この設計書はレビュー用ドラフトです。確定後に実装フェーズへ移行します。</footer>
+  </main>
+</div>

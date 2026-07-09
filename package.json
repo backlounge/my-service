@@ -2,7 +2,7 @@
   "name": "gyomu-system-lp",
   "private": true,
   "version": "1.0.0",
-  "description": "中小企業・個人事業主向け業務システム紹介LP",
+  "description": "中小企業・個人事業主向け業務システムの製品サイト(旧: 業務システム紹介LP)",
   "scripts": {
     "dev": "tailwindcss -i ./src/input.css -o ./public/css/style.css --watch",
     "build": "tailwindcss -i ./src/input.css -o ./public/css/style.css --minify && node scripts/generate-build-info.mjs",
