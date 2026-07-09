@@ -135,14 +135,29 @@ function renderLiveProduct(product) {
     ${
       product.requirements
         ? `
-    <!-- 動作環境 -->
+    <!-- 動作環境(利用時に必要なもの) -->
     <section class="bg-slate-50 py-16">
       <div class="mx-auto max-w-3xl px-6 lg:px-8">
         <h2 class="text-2xl font-bold text-slate-900">動作環境</h2>
+        <p class="mt-2 text-slate-600">日常的にご利用いただく際に必要なものです。</p>
         <ul class="mt-6 space-y-3">
           ${product.requirements.map((r) => `<li class="flex gap-3 text-slate-700"><span class="text-brand-600">✓</span><span>${escapeHtml(r)}</span></li>`).join("")}
         </ul>
       </div>
+    </section>`
+        : ""
+    }
+
+    ${
+      product.setupNote
+        ? `
+    <!-- 導入(セットアップ)について -->
+    <section class="mx-auto max-w-3xl px-6 py-16 lg:px-8">
+      <h2 class="text-2xl font-bold text-slate-900">導入について</h2>
+      <p class="mt-4 text-slate-700">${escapeHtml(product.setupNote)}</p>
+      <p class="mt-3 text-sm text-slate-500">
+        導入作業そのものが不安な場合は、お問い合わせ時にその旨をお知らせください。
+      </p>
     </section>`
         : ""
     }
