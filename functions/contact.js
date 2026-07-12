@@ -8,21 +8,35 @@ export async function onRequestGet(context) {
   const url = new URL(request.url);
   const productSlug = url.searchParams.get("product") || "";
   const product = productSlug ? getProductBySlug(productSlug) : null;
+  const isPurchase = url.searchParams.get("intent") === "purchase" && !!product;
+
+  // 購入お申し込み時は、本文にお申し込みテンプレートをあらかじめ入力しておく。
+  const purchaseTemplate = product
+    ? `【購入希望】${product.name}\n\n・ご利用予定の台数(1台=1ライセンス):\n・請求書/領収書の要否:\n・ご質問やご要望など:\n\n上記の内容で購入を希望します。お支払い方法(お振込先)のご案内をお願いします。`
+    : "";
 
   const bodyHtml = `
     <section class="mx-auto max-w-2xl px-6 py-16 lg:px-8">
       ${renderBreadcrumb([{ label: "ホーム", href: "/" }, { label: "お問い合わせ" }])}
 
       <div class="mx-auto mt-6 max-w-2xl text-center">
-        <p class="section-eyebrow">Contact</p>
-        <h1 class="section-title">お問い合わせ</h1>
-        <p class="section-subtitle">導入のご相談・お見積りなど、お気軽にお問い合わせください。1〜2営業日以内にご返信いたします。</p>
+        <p class="section-eyebrow">${isPurchase ? "Order" : "Contact"}</p>
+        <h1 class="section-title">${isPurchase ? "購入のお申し込み" : "お問い合わせ"}</h1>
+        <p class="section-subtitle">${
+          isPurchase
+            ? "以下のフォームからお申し込みください。1〜2営業日以内に、金額とお支払い方法(銀行振込)をメールでご案内します。ご入金の確認後、プログラム一式のZIPファイルをメールでお届けします。"
+            : "導入のご相談・お見積りなど、お気軽にお問い合わせください。1〜2営業日以内にご返信いたします。"
+        }</p>
       </div>
 
       ${
         product
           ? `<div class="mt-8 rounded-xl border border-brand-100 bg-brand-50 px-5 py-4 text-center text-sm text-brand-800">
-              <strong>${escapeHtml(product.name)}</strong>についてのお問い合わせとして送信されます
+              ${
+                isPurchase
+                  ? `<strong>${escapeHtml(product.name)}</strong>の購入お申し込みとして送信されます`
+                  : `<strong>${escapeHtml(product.name)}</strong>についてのお問い合わせとして送信されます`
+              }
             </div>`
           : ""
       }
@@ -48,11 +62,11 @@ export async function onRequestGet(context) {
         </div>
 
         <div>
-          <label for="message" class="mb-2 block text-sm font-medium text-slate-700">お問い合わせ内容 <span class="text-red-500">*</span></label>
-          <textarea id="message" name="message" rows="6" required class="input-field" placeholder="ご相談内容をご記入ください"></textarea>
+          <label for="message" class="mb-2 block text-sm font-medium text-slate-700">${isPurchase ? "お申し込み内容" : "お問い合わせ内容"} <span class="text-red-500">*</span></label>
+          <textarea id="message" name="message" rows="${isPurchase ? "8" : "6"}" required class="input-field" placeholder="ご相談内容をご記入ください">${isPurchase ? escapeHtml(purchaseTemplate) : ""}</textarea>
         </div>
 
-        <button type="submit" class="btn-primary w-full sm:w-auto">送信する</button>
+        <button type="submit" class="btn-primary w-full sm:w-auto">${isPurchase ? "この内容で申し込む" : "送信する"}</button>
 
         <p id="form-status" class="hidden text-sm" role="status"></p>
       </form>
@@ -60,7 +74,7 @@ export async function onRequestGet(context) {
   `;
 
   return renderLayout({
-    title: "お問い合わせ",
+    title: isPurchase ? "購入のお申し込み" : "お問い合わせ",
     description: "導入のご相談・お見積りのご依頼など、お気軽にお問い合わせください。",
     path: "/contact",
     activeNav: "contact",

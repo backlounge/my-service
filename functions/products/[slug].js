@@ -52,9 +52,10 @@ function renderLiveProduct(product) {
       <p class="mt-3 text-xl font-medium text-brand-600">${escapeHtml(product.tagline)}</p>
       <p class="section-subtitle max-w-2xl">${escapeHtml(product.summary)}</p>
       <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-        <a href="/contact?product=${encodeURIComponent(product.slug)}" class="btn-primary">この商品について問い合わせる</a>
-        <a href="#screenshots" class="btn-secondary">画面イメージを見る</a>
+        <a href="/contact?product=${encodeURIComponent(product.slug)}&intent=purchase" class="btn-primary">購入を申し込む</a>
+        <a href="/contact?product=${encodeURIComponent(product.slug)}" class="btn-secondary">まず相談する</a>
       </div>
+      <p class="mt-3 text-sm text-slate-500">オンライン決済ページはありません。お申し込み後、メールでお支払い方法をご案内し、ご入金確認後にZIPをお届けします(<a href="#purchase-flow" class="underline hover:text-brand-600">ご購入の流れ</a>)。</p>
     </section>
 
     ${
@@ -162,12 +163,48 @@ function renderLiveProduct(product) {
         : ""
     }
 
+    ${
+      product.purchaseFlow
+        ? `
+    <!-- ご購入の流れ -->
+    <section id="purchase-flow" class="bg-slate-50 py-16">
+      <div class="mx-auto max-w-5xl px-6 lg:px-8">
+        <h2 class="text-2xl font-bold text-slate-900">ご購入の流れ</h2>
+        <p class="mt-2 text-slate-600">当サイトから直接、個別にお届けします(オンライン決済ページはありません)。</p>
+        <ol class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          ${product.purchaseFlow
+            .map(
+              (s, i) => `
+            <li class="card">
+              <div class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-sm font-bold text-white">${i + 1}</div>
+              <h3 class="mt-3 text-base font-semibold text-slate-900">${escapeHtml(s.title)}</h3>
+              <p class="mt-1 text-sm leading-relaxed text-slate-600">${escapeHtml(s.desc)}</p>
+            </li>`
+            )
+            .join("")}
+        </ol>
+        ${
+          product.deliveryNote
+            ? `<div class="mt-8 rounded-xl border border-slate-200 bg-white px-5 py-4 text-sm text-slate-700"><strong class="text-slate-900">納品方法:</strong> ${escapeHtml(product.deliveryNote)}</div>`
+            : ""
+        }
+        <div class="mt-8">
+          <a href="/contact?product=${encodeURIComponent(product.slug)}&intent=purchase" class="btn-primary">購入を申し込む</a>
+        </div>
+      </div>
+    </section>`
+        : ""
+    }
+
     <!-- 価格 -->
     <section class="mx-auto max-w-3xl px-6 py-16 text-center lg:px-8">
       <h2 class="text-2xl font-bold text-slate-900">価格</h2>
       <p class="mt-4 text-3xl font-bold text-slate-900">${escapeHtml(product.priceNote)}</p>
-      <p class="mt-3 text-slate-600">価格は個別にご案内しています。まずはお問い合わせください。</p>
-      <a href="/contact?product=${encodeURIComponent(product.slug)}" class="btn-primary mt-8">この商品について問い合わせる</a>
+      <p class="mt-3 text-slate-600">${escapeHtml(product.priceSubNote || "価格は個別にご案内しています。金額をご確認のうえで購入をお決めいただけます。")}</p>
+      <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <a href="/contact?product=${encodeURIComponent(product.slug)}&intent=purchase" class="btn-primary">購入を申し込む</a>
+        <a href="/contact?product=${encodeURIComponent(product.slug)}" class="btn-secondary">価格を問い合わせる</a>
+      </div>
     </section>
 
     ${
@@ -200,9 +237,12 @@ function renderLiveProduct(product) {
     <!-- 最終CTA -->
     <section class="bg-brand-600">
       <div class="mx-auto max-w-4xl px-6 py-16 text-center lg:px-8">
-        <h2 class="text-3xl font-bold text-white">${escapeHtml(product.name)}について相談する</h2>
-        <p class="mt-4 text-brand-100">導入のご相談・お見積りは無料です。お気軽にお問い合わせください。</p>
-        <a href="/contact?product=${encodeURIComponent(product.slug)}" class="btn-primary mt-8 bg-white !text-brand-700 hover:bg-brand-50">この商品について問い合わせる</a>
+        <h2 class="text-3xl font-bold text-white">${escapeHtml(product.name)}を購入する</h2>
+        <p class="mt-4 text-brand-100">導入のご相談・お見積りは無料です。まずはお気軽にお申し込み・お問い合わせください。</p>
+        <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <a href="/contact?product=${encodeURIComponent(product.slug)}&intent=purchase" class="btn-primary bg-white !text-brand-700 hover:bg-brand-50">購入を申し込む</a>
+          <a href="/contact?product=${encodeURIComponent(product.slug)}" class="text-sm font-semibold text-white underline hover:text-brand-100">まず相談する</a>
+        </div>
       </div>
     </section>
   `;
@@ -241,7 +281,7 @@ export async function onRequestGet(context) {
       "@type": "SoftwareApplication",
       name: product.name,
       applicationCategory: "BusinessApplication",
-      operatingSystem: "Web",
+      operatingSystem: "Windows",
       description: product.summary,
       offers: { "@type": "Offer", priceCurrency: "JPY", availability: "https://schema.org/InStock" },
     });

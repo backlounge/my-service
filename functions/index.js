@@ -20,7 +20,7 @@ export async function onRequestGet() {
         </h1>
         <p class="section-subtitle mx-auto max-w-2xl">
           顧客管理、見積管理、在庫管理、予約管理。日々の業務に必要なシステムを、現時点では買い切り型を基本にご提供しています。
-          ご自身のCloudflareアカウントに設置して、そのままお使いいただけます。
+          ダウンロードして展開するだけで、すぐにお使いいただけます。
         </p>
         <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <a href="/products" class="btn-primary">商品一覧を見る</a>
@@ -37,8 +37,8 @@ export async function onRequestGet() {
           <p class="mt-1 text-sm text-slate-500">現時点では、購入後の継続課金が発生しない形を基本としています</p>
         </div>
         <div>
-          <p class="text-lg font-bold text-slate-900">自社アカウントに設置</p>
-          <p class="mt-1 text-sm text-slate-500">データはご自身のCloudflare環境で管理</p>
+          <p class="text-lg font-bold text-slate-900">インストール不要</p>
+          <p class="mt-1 text-sm text-slate-500">ダウンロードして展開するだけ。データはお手元のパソコンで管理</p>
         </div>
         <div>
           <p class="text-lg font-bold text-slate-900">含まれない機能も明記</p>
@@ -150,7 +150,7 @@ export async function onRequestGet() {
   return renderLayout({
     title: "ギョウムラク | 中小企業・個人事業主向け業務システム(買い切り型)",
     description:
-      "顧客管理・見積管理・在庫管理・予約管理など、中小企業・個人事業主向けの業務システムを提供。現時点では買い切り型を基本とし、ご自身のCloudflareアカウントに設置してお使いいただけます。",
+      "顧客管理・見積管理・在庫管理・予約管理など、中小企業・個人事業主向けの業務システムを提供。現時点では買い切り型を基本とし、ダウンロードして展開するだけでお使いいただけます。",
     path: "/",
     activeNav: null,
     bodyHtml,
