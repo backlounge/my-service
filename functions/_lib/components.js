@@ -25,12 +25,20 @@ export function renderProductCard(product) {
     product.status === "live"
       ? `<span class="mt-6 inline-block text-sm font-semibold text-brand-600">詳しく見る →</span>`
       : `<span class="mt-6 inline-block text-sm font-semibold text-slate-400">準備が整い次第ご案内します</span>`;
+  // 機能ページは公開済みだが購入導線が未整備の商品向けに、"販売中"とは別の控えめな表示にする。
+  // pricingAnnounced: 価格は確定しているが、購入受付(振込口座・納品運用等)がまだの状態。
+  const pill =
+    product.status === "live" && !product.priceNote
+      ? product.pricingAnnounced
+        ? `<span class="status-pill bg-amber-50 text-amber-700">価格確定・お申し込み準備中</span>`
+        : `<span class="status-pill bg-slate-100 text-slate-600">価格未定</span>`
+      : renderStatusPill(product.status);
 
   return `
     <a href="/products/${escapeHtml(product.slug)}" class="product-card">
       <div class="flex items-start justify-between gap-3">
         <h3 class="text-lg font-semibold text-slate-900">${name}</h3>
-        ${renderStatusPill(product.status)}
+        ${pill}
       </div>
       <p class="mt-2 text-sm font-medium text-brand-600">${tagline}</p>
       <p class="mt-3 flex-1 text-sm leading-relaxed text-slate-600">${summary}</p>
