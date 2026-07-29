@@ -1,6 +1,7 @@
 import { renderLayout } from "../_lib/layout.js";
 import { renderBreadcrumb, renderProductCard } from "../_lib/components.js";
 import { PRODUCTS } from "../_lib/data/products.js";
+import { SITE_URL } from "../_lib/site.js";
 
 export async function onRequestGet() {
   const bodyHtml = `
@@ -11,7 +12,7 @@ export async function onRequestGet() {
         <p class="section-eyebrow">Products</p>
         <h1 class="section-title">商品一覧</h1>
         <p class="section-subtitle">
-          現時点では買い切り型を基本とした、自社アカウントへの設置型です。気になる商品の詳細ページから、機能や価格をご確認ください。
+          現時点では買い切り型を基本とした、ダウンロードしてすぐに使えるWindows向けデスクトップアプリです。気になる商品の詳細ページから、機能や価格をご確認ください。
         </p>
       </div>
 
@@ -32,8 +33,8 @@ export async function onRequestGet() {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "ホーム", item: "https://example.com/" },
-          { "@type": "ListItem", position: 2, name: "商品一覧", item: "https://example.com/products" },
+          { "@type": "ListItem", position: 1, name: "ホーム", item: `${SITE_URL}/` },
+          { "@type": "ListItem", position: 2, name: "商品一覧", item: `${SITE_URL}/products` },
         ],
       },
     ],

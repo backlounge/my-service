@@ -53,7 +53,7 @@ function renderHeader(activeNav, activePath) {
   <header class="sticky top-0 z-50 border-b border-slate-100 bg-white/80 backdrop-blur">
     <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
       <a href="/" class="flex items-center gap-2 text-lg font-bold text-slate-900">
-        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white">G</span>
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white">B</span>
         <span>${escapeHtml(SITE_NAME)}</span>
       </a>
 
@@ -118,7 +118,7 @@ function renderFooter() {
 
       <div class="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-200 pt-8 sm:flex-row">
         <a href="/" class="flex items-center gap-2 text-base font-bold text-slate-900">
-          <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-600 text-white text-sm">G</span>
+          <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-600 text-white text-sm">B</span>
           <span>${escapeHtml(SITE_NAME)}</span>
         </a>
         <p class="text-xs text-slate-400">&copy; <span id="year"></span> ${escapeHtml(SITE_NAME)}. All rights reserved.</p>
@@ -172,7 +172,7 @@ export function renderLayout(options) {
   <meta name="twitter:description" content="${escapeHtml(description)}" />
   <meta name="twitter:image" content="${ogImage}" />
 
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%234f46e5%22/><text x=%2250%22 y=%2266%22 font-size=%2260%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22sans-serif%22>G</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%234f46e5%22/><text x=%2250%22 y=%2266%22 font-size=%2260%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22sans-serif%22>B</text></svg>" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -193,6 +193,11 @@ export function renderLayout(options) {
 </html>`;
 
   return new Response(html, {
-    headers: { "Content-Type": "text/html; charset=UTF-8" },
+    headers: {
+      "Content-Type": "text/html; charset=UTF-8",
+      // 全ページ共通。更新内容が同一URLへ即時反映されるよう、ブラウザ・CDNどちらにもキャッシュさせない。
+      // 画像等の静的アセット(public/配下)はCloudflare Pagesの既定のキャッシュのままで、これには影響しない。
+      "Cache-Control": "no-store",
+    },
   });
 }

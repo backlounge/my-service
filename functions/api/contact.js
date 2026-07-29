@@ -25,8 +25,9 @@ export async function onRequestPost(context) {
   const email = (form.get("email") || "").toString().trim();
   const company = (form.get("company") || "").toString().trim();
   let message = (form.get("message") || "").toString().trim();
-  // 商品詳細ページから遷移した場合、どの商品についての問い合わせかを本文の先頭に付記する
+  // 商品詳細ページから遷移した場合、どの商品(・プラン)についての問い合わせかを本文の先頭に付記する
   const productName = (form.get("product_name") || "").toString().trim();
+  const editionName = (form.get("edition_name") || "").toString().trim();
 
   if (!name || !email || !message) {
     return json({ success: false, message: "必須項目が入力されていません。" }, 400);
@@ -34,11 +35,12 @@ export async function onRequestPost(context) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return json({ success: false, message: "メールアドレスの形式が正しくありません。" }, 400);
   }
-  if (name.length > 100 || email.length > 200 || company.length > 200 || message.length > 4000) {
+  if (name.length > 100 || email.length > 200 || company.length > 200 || message.length > 4000 || editionName.length > 100) {
     return json({ success: false, message: "入力内容が長すぎます。" }, 400);
   }
   if (productName) {
-    message = `【対象商品: ${productName.slice(0, 100)}】\n${message}`;
+    const label = editionName ? `${productName.slice(0, 100)}（${editionName.slice(0, 100)}）` : productName.slice(0, 100);
+    message = `【対象商品: ${label}】\n${message}`;
   }
 
   const ip = request.headers.get("CF-Connecting-IP") || "unknown";

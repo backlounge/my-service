@@ -10,9 +10,16 @@ export async function onRequestGet(context) {
   const product = productSlug ? getProductBySlug(productSlug) : null;
   const isPurchase = url.searchParams.get("intent") === "purchase" && !!product;
 
+  // プランごとに価格が異なる商品(顧客管理システム等)では、?edition=<key> でどのプランの
+  // お申し込みかを引き継ぐ。存在しない/該当しないキーの場合はeditionなし(未指定)として扱う。
+  const editionKey = url.searchParams.get("edition") || "";
+  const edition = product && editionKey ? (product.editions || []).find((e) => e.key === editionKey) || null : null;
+
   // 購入お申し込み時は、本文にお申し込みテンプレートをあらかじめ入力しておく。
   const purchaseTemplate = product
-    ? `【購入希望】${product.name}\n\n・ご利用予定の台数(1台=1ライセンス):\n・請求書/領収書の要否:\n・ご質問やご要望など:\n\n上記の内容で購入を希望します。お支払い方法(お振込先)のご案内をお願いします。`
+    ? `【購入希望】${product.name}${edition ? `（${edition.name}）` : ""}\n\n${
+        edition ? `・希望プラン: ${edition.name}\n` : ""
+      }・ご利用予定の台数(1台=1ライセンス):\n・請求書/領収書の要否:\n・ご質問やご要望など:\n\n上記の内容で購入を希望します。お支払い方法(お振込先)のご案内をお願いします。`
     : "";
 
   const bodyHtml = `
@@ -34,16 +41,17 @@ export async function onRequestGet(context) {
           ? `<div class="mt-8 rounded-xl border border-brand-100 bg-brand-50 px-5 py-4 text-center text-sm text-brand-800">
               ${
                 isPurchase
-                  ? `<strong>${escapeHtml(product.name)}</strong>の購入お申し込みとして送信されます`
+                  ? `<strong>${escapeHtml(product.name)}${edition ? `（${escapeHtml(edition.name)}）` : ""}</strong>の購入お申し込みとして送信されます`
                   : `<strong>${escapeHtml(product.name)}</strong>についてのお問い合わせとして送信されます`
               }
             </div>`
           : ""
       }
 
-      <form id="contact-form" class="mt-10 space-y-6" action="/api/contact" method="POST">
+      <form id="contact-form" class="mt-10 space-y-6" action="/api/contact" method="POST" data-purchase="${isPurchase ? "true" : "false"}">
         <input type="checkbox" name="botcheck" class="hidden" style="display:none" tabindex="-1" autocomplete="off" />
         ${product ? `<input type="hidden" name="product_name" value="${escapeHtml(product.name)}" />` : ""}
+        ${edition ? `<input type="hidden" name="edition_name" value="${escapeHtml(edition.name)}" />` : ""}
 
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>

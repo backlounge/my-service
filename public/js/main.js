@@ -27,6 +27,26 @@ if (menuToggle && mobileMenu) {
 }
 
 // お問い合わせフォーム送信(自前API: /api/contact)
+const screenshotLightbox = document.getElementById("screenshot-lightbox");
+const screenshotLightboxImage = document.getElementById("screenshot-lightbox-image");
+const screenshotLightboxClose = document.getElementById("screenshot-lightbox-close");
+
+if (screenshotLightbox && screenshotLightboxImage && screenshotLightboxClose) {
+  document.querySelectorAll("[data-screenshot-src]").forEach((button) => {
+    button.addEventListener("click", () => {
+      screenshotLightboxImage.src = button.dataset.screenshotSrc;
+      screenshotLightboxImage.alt = button.dataset.screenshotAlt || "画面イメージ";
+      screenshotLightbox.showModal();
+      screenshotLightboxClose.focus();
+    });
+  });
+
+  screenshotLightboxClose.addEventListener("click", () => screenshotLightbox.close());
+  screenshotLightbox.addEventListener("click", (event) => {
+    if (event.target === screenshotLightbox) screenshotLightbox.close();
+  });
+}
+
 const contactForm = document.getElementById("contact-form");
 const formStatus = document.getElementById("form-status");
 
@@ -50,7 +70,10 @@ if (contactForm) {
       const result = await response.json();
 
       if (result.success) {
-        formStatus.textContent = "お問い合わせありがとうございます。担当者よりご連絡いたします。";
+        formStatus.textContent =
+          contactForm.dataset.purchase === "true"
+            ? "お申し込みを受け付けました。通常1〜2営業日以内に、お支払い方法をご案内します。"
+            : "お問い合わせありがとうございます。担当者よりご連絡いたします。";
         formStatus.className = "text-sm text-brand-700";
         contactForm.reset();
       } else {

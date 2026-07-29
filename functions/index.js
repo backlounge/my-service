@@ -148,7 +148,7 @@ export async function onRequestGet() {
   `;
 
   return renderLayout({
-    title: "ギョウムラク | 中小企業・個人事業主向け業務システム(買い切り型)",
+    title: "BackLounge | 中小企業・個人事業主向け業務システム(買い切り型)",
     description:
       "顧客管理・見積管理・在庫管理・予約管理など、中小企業・個人事業主向けの業務システムを提供。現時点では買い切り型を基本とし、ダウンロードして展開するだけでお使いいただけます。",
     path: "/",

@@ -1,6 +1,7 @@
-// サイト全体で共有する定数。ドメインが決まったらSITE_URLを実際の値に差し替える。
-export const SITE_NAME = "ギョウムラク";
-export const SITE_URL = "https://example.com";
+// サイト全体で共有する定数。
+// SITE_URLは現在Cloudflare Pagesのデフォルトドメイン。独自ドメインを取得・接続した時点で差し替える。
+export const SITE_NAME = "BackLounge";
+export const SITE_URL = "https://my-service-4bi.pages.dev";
 export const SITE_TAGLINE = "中小企業・個人事業主のための業務システム";
 
 export const NAV_ITEMS = [

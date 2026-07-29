@@ -31,13 +31,22 @@ function renderLiveProduct(product) {
     .map(
       (s) => `
       <figure>
-        <img src="${escapeHtml(s.src)}" alt="${escapeHtml(s.alt)}" class="w-full rounded-xl border border-slate-200 shadow-sm" loading="lazy" />
+        <button type="button" class="group block w-full cursor-zoom-in text-left" data-screenshot-src="${escapeHtml(s.src)}" data-screenshot-alt="${escapeHtml(s.alt)}" aria-label="${escapeHtml(s.alt)}を拡大表示">
+          <img src="${escapeHtml(s.src)}" alt="${escapeHtml(s.alt)}" class="w-full rounded-xl border border-slate-200 shadow-sm transition group-hover:shadow-md" loading="lazy" />
+          <span class="mt-2 block text-sm text-slate-500">クリックして拡大</span>
+        </button>
       </figure>
     `
     )
     .join("");
 
-  const isPurchasable = Boolean(product.priceNote);
+  // hasSinglePrice: 見積管理システムのような単一価格の商品(priceNoteを直接使う)。
+  // hasEditionPricing: 顧客管理システムのようにプランごとに価格が異なる商品(editions[].priceを正とする)。
+  const hasSinglePrice = Boolean(product.priceNote);
+  const hasEditionPricing = Boolean(
+    product.purchaseEnabled && product.editions && product.editions.some((e) => e.price)
+  );
+  const isPurchasable = hasSinglePrice || hasEditionPricing;
   // 価格は確定しているが購入導線(振込口座・納品運用)がまだ整っていない商品向けの中間状態。
   const pricingAnnounced = isPurchasable || Boolean(product.pricingAnnounced);
 
@@ -63,20 +72,26 @@ function renderLiveProduct(product) {
       <p class="section-subtitle max-w-2xl">${escapeHtml(product.summary)}</p>
       <div class="mt-8 flex flex-col gap-3 sm:flex-row">
         ${
-          isPurchasable
+          hasSinglePrice
             ? `
         <a href="/contact?product=${encodeURIComponent(product.slug)}&intent=purchase" class="btn-primary">購入を申し込む</a>
         <a href="/contact?product=${encodeURIComponent(product.slug)}" class="btn-secondary">まず相談する</a>`
-            : `<a href="/contact?product=${encodeURIComponent(product.slug)}" class="btn-primary">お問い合わせする</a>`
+            : hasEditionPricing
+              ? `
+        <a href="#editions" class="btn-primary">プランを見て申し込む</a>
+        <a href="/contact?product=${encodeURIComponent(product.slug)}" class="btn-secondary">まず相談する</a>`
+              : `<a href="/contact?product=${encodeURIComponent(product.slug)}" class="btn-primary">お問い合わせする</a>`
         }
       </div>
       <p class="mt-3 text-sm text-slate-500">
         ${
-          isPurchasable
+          hasSinglePrice
             ? `オンライン決済ページはありません。お申し込み後、メールでお支払い方法をご案内し、ご入金確認後にZIPをお届けします(<a href="#purchase-flow" class="underline hover:text-brand-600">ご購入の流れ</a>)。`
-            : pricingAnnounced
-              ? `価格は確定しています(下記のライト版・スタンダード版の比較をご確認ください)。お申し込み方法は現在ご案内の準備を進めており、開始まで今しばらくお待ちください。ご興味をお持ちの方はお問い合わせください。`
-              : `価格・お申し込み方法は現在ご案内の準備を進めています。決まり次第このページでご案内しますので、ご興味をお持ちの方はお問い合わせください。`
+            : hasEditionPricing
+              ? `料金・お申し込みはプランごとに異なります。下記の比較表にある各プランの「購入を申し込む」ボタンからお申し込みください。オンライン決済ページはありません(<a href="#purchase-flow" class="underline hover:text-brand-600">ご購入の流れ</a>)。`
+              : pricingAnnounced
+                ? `価格は確定しています(下記のライト版・スタンダード版の比較をご確認ください)。お申し込み方法は現在ご案内の準備を進めており、開始まで今しばらくお待ちください。ご興味をお持ちの方はお問い合わせください。`
+                : `価格・お申し込み方法は現在ご案内の準備を進めています。決まり次第このページでご案内しますので、ご興味をお持ちの方はお問い合わせください。`
         }
       </p>
     </section>
@@ -121,23 +136,28 @@ function renderLiveProduct(product) {
       product.editions
         ? `
     <!-- プラン比較 -->
-    <section class="bg-slate-50 py-16">
+    <section id="editions" class="bg-slate-50 py-16">
       <div class="mx-auto max-w-5xl px-6 lg:px-8">
         <h2 class="text-2xl font-bold text-slate-900">ライト版・スタンダード版の比較</h2>
-        <p class="mt-2 text-slate-600">登録できる顧客数と、集計・レポート機能の有無が主な違いです。</p>
+        <p class="mt-2 text-slate-600">登録できる顧客数と、集計・レポート機能の有無が主な違いです。価格は各プランのカードに記載のとおりです。</p>
         <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
           ${product.editions
             .map(
               (e) => `
-          <div class="card">
+          <div class="card flex flex-col">
             <h3 class="text-lg font-semibold text-slate-900">${escapeHtml(e.name)}</h3>
             <p class="mt-1 text-sm font-medium text-brand-600">${escapeHtml(e.subtitle)}</p>
             <p class="mt-1 text-sm text-slate-500">${escapeHtml(e.limit)}</p>
             ${e.price ? `<p class="mt-3 text-2xl font-bold text-slate-900">${escapeHtml(e.price)}</p>` : ""}
-            <ul class="mt-4 space-y-2">
+            <ul class="mt-4 flex-1 space-y-2">
               ${e.highlights.map((h) => `<li class="flex gap-2 text-sm text-slate-700"><span class="text-brand-600">✓</span><span>${escapeHtml(h)}</span></li>`).join("")}
               ${(e.notIncluded || []).map((n) => `<li class="flex gap-2 text-sm text-slate-400"><span>–</span><span>${escapeHtml(n)}</span></li>`).join("")}
             </ul>
+            ${
+              hasEditionPricing && e.key
+                ? `<a href="/contact?product=${encodeURIComponent(product.slug)}&edition=${encodeURIComponent(e.key)}&intent=purchase" class="btn-primary mt-6 text-center">購入を申し込む</a>`
+                : ""
+            }
           </div>`
             )
             .join("")}
@@ -168,7 +188,14 @@ function renderLiveProduct(product) {
           ${screenshotsHtml}
         </div>
       </div>
-    </section>`
+    </section>
+
+    <dialog id="screenshot-lightbox" class="m-auto w-[min(96vw,1100px)] max-w-none rounded-2xl bg-transparent p-0 backdrop:bg-slate-950/80">
+      <div class="relative">
+        <button type="button" id="screenshot-lightbox-close" class="absolute right-3 top-3 z-10 rounded-full bg-white/95 px-4 py-2 text-sm font-bold text-slate-800 shadow hover:bg-white" aria-label="拡大表示を閉じる">閉じる</button>
+        <img id="screenshot-lightbox-image" src="" alt="" class="max-h-[90vh] w-full rounded-2xl bg-white object-contain shadow-2xl" />
+      </div>
+    </dialog>`
         : ""
     }
 
@@ -241,16 +268,26 @@ function renderLiveProduct(product) {
             ? `<div class="mt-8 rounded-xl border border-slate-200 bg-white px-5 py-4 text-sm text-slate-700"><strong class="text-slate-900">納品方法:</strong> ${escapeHtml(product.deliveryNote)}</div>`
             : ""
         }
+        ${
+          hasSinglePrice
+            ? `
         <div class="mt-8">
           <a href="/contact?product=${encodeURIComponent(product.slug)}&intent=purchase" class="btn-primary">購入を申し込む</a>
-        </div>
+        </div>`
+            : hasEditionPricing
+              ? `
+        <div class="mt-8">
+          <a href="#editions" class="btn-primary">プランを見て申し込む</a>
+        </div>`
+              : ""
+        }
       </div>
     </section>`
         : ""
     }
 
     ${
-      isPurchasable
+      hasSinglePrice
         ? `
     <!-- 価格 -->
     <section class="mx-auto max-w-3xl px-6 py-16 text-center lg:px-8">
@@ -301,7 +338,11 @@ function renderLiveProduct(product) {
         <h2 class="text-3xl font-bold text-white">${escapeHtml(product.name)}を購入する</h2>
         <p class="mt-4 text-brand-100">導入のご相談・お見積りは無料です。まずはお気軽にお申し込み・お問い合わせください。</p>
         <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <a href="/contact?product=${encodeURIComponent(product.slug)}&intent=purchase" class="btn-primary bg-white !text-brand-700 hover:bg-brand-50">購入を申し込む</a>
+          ${
+            hasSinglePrice
+              ? `<a href="/contact?product=${encodeURIComponent(product.slug)}&intent=purchase" class="btn-primary bg-white !text-brand-700 hover:bg-brand-50">購入を申し込む</a>`
+              : `<a href="#editions" class="btn-primary bg-white !text-brand-700 hover:bg-brand-50">プランを見て申し込む</a>`
+          }
           <a href="/contact?product=${encodeURIComponent(product.slug)}" class="text-sm font-semibold text-white underline hover:text-brand-100">まず相談する</a>
         </div>`
             : `
@@ -349,8 +390,10 @@ export async function onRequestGet(context) {
     },
   ];
 
+  // 価格が未確定の商品では、価格を偽って構造化データに載せないよう、
+  // 実際の価格情報(priceValue または editions[].priceValue)がある場合のみ出力する。
+  const editionPrices = (product.editions || []).map((e) => e.priceValue).filter((v) => typeof v === "number");
   if (product.status === "live" && product.priceValue) {
-    // 価格が未確定の商品では、価格を偽って構造化データに載せないよう、priceValueがある場合のみ出力する。
     structuredData.push({
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
@@ -363,6 +406,26 @@ export async function onRequestGet(context) {
         "@type": "Offer",
         price: String(product.priceValue),
         priceCurrency: "JPY",
+        availability: "https://schema.org/InStock",
+        url: productUrl,
+      },
+    });
+  } else if (product.status === "live" && editionPrices.length) {
+    // プランごとに価格が異なる商品(顧客管理システム等)は、単一価格ではなくAggregateOfferで表す。
+    structuredData.push({
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: product.name,
+      url: productUrl,
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Windows",
+      description: product.summary,
+      offers: {
+        "@type": "AggregateOffer",
+        lowPrice: String(Math.min(...editionPrices)),
+        highPrice: String(Math.max(...editionPrices)),
+        priceCurrency: "JPY",
+        offerCount: editionPrices.length,
         availability: "https://schema.org/InStock",
         url: productUrl,
       },
