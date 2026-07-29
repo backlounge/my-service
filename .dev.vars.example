@@ -1,1 +1,13 @@
 SESSION_SECRET=change-this-to-a-long-random-string
+
+# お問い合わせ・購入申込フォームのメール通知(Resend, https://resend.com)用。
+# RESEND_API_KEY は本番ではCloudflare Secretとして設定すること(このファイルには本物の値を書かない)。
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxx
+# 運営者への通知メールの宛先(申込者への受付メールのreply-toにも使う)。
+CONTACT_NOTIFY_TO=you@example.com
+# 送信元アドレス(表示名 <アドレス> の形式)。
+# 実際の購入者・問い合わせ者(第三者)へ送信するには、Resend側で送信元ドメインを検証(DNS設定)
+# する必要がある。独自ドメインをResendで検証してから、そのドメインのアドレスを設定すること。
+# onboarding@resend.dev はResendアカウント所有者自身への動作確認にしか使えず、
+# 第三者(顧客)宛には送信できないため、本番の値としては使わない。
+CONTACT_FROM_EMAIL=info@yourdomain.example

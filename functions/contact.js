@@ -52,6 +52,7 @@ export async function onRequestGet(context) {
         <input type="checkbox" name="botcheck" class="hidden" style="display:none" tabindex="-1" autocomplete="off" />
         ${product ? `<input type="hidden" name="product_name" value="${escapeHtml(product.name)}" />` : ""}
         ${edition ? `<input type="hidden" name="edition_name" value="${escapeHtml(edition.name)}" />` : ""}
+        ${isPurchase ? `<input type="hidden" name="intent" value="purchase" />` : ""}
 
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
