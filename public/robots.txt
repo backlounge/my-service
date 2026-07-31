@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://my-service-4bi.pages.dev/sitemap.xml
+Sitemap: https://backlounge.net/sitemap.xml

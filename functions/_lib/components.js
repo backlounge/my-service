@@ -25,14 +25,32 @@ export function renderProductCard(product) {
     product.status === "live"
       ? `<span class="mt-6 inline-block text-sm font-semibold text-brand-600">詳しく見る →</span>`
       : `<span class="mt-6 inline-block text-sm font-semibold text-slate-400">準備が整い次第ご案内します</span>`;
-  // 機能ページは公開済みだが購入導線が未整備の商品向けに、"販売中"とは別の控えめな表示にする。
+
+  // hasSinglePrice: 見積管理システムのような単一価格の商品(priceNoteを直接使う)。
+  // hasEditionPricing: 顧客管理システムのようにプランごとに価格が異なる商品(editions[]の各価格を使う)。
+  // functions/products/[slug].js の同名ロジックと揃えている。
+  const hasSinglePrice = Boolean(product.priceNote);
+  const hasEditionPricing = Boolean(
+    product.purchaseEnabled && product.editions && product.editions.some((e) => e.price)
+  );
+  const isPurchasable = hasSinglePrice || hasEditionPricing;
   // pricingAnnounced: 価格は確定しているが、購入受付(振込口座・納品運用等)がまだの状態。
+  const pricingAnnounced = isPurchasable || Boolean(product.pricingAnnounced);
+
   const pill =
-    product.status === "live" && !product.priceNote
-      ? product.pricingAnnounced
+    product.status === "live" && !isPurchasable
+      ? pricingAnnounced
         ? `<span class="status-pill bg-amber-50 text-amber-700">価格確定・お申し込み準備中</span>`
         : `<span class="status-pill bg-slate-100 text-slate-600">価格未定</span>`
       : renderStatusPill(product.status);
+
+  const priceLine = hasEditionPricing
+    ? `<p class="mt-1 text-sm font-semibold text-slate-800">${product.editions
+        .map((e) => `${escapeHtml(e.name)}${e.priceValue.toLocaleString("ja-JP")}円`)
+        .join("／")}</p>`
+    : hasSinglePrice
+      ? `<p class="mt-1 text-sm font-semibold text-slate-800">${escapeHtml(product.priceNote)}</p>`
+      : "";
 
   return `
     <a href="/products/${escapeHtml(product.slug)}" class="product-card">
@@ -41,6 +59,7 @@ export function renderProductCard(product) {
         ${pill}
       </div>
       <p class="mt-2 text-sm font-medium text-brand-600">${tagline}</p>
+      ${priceLine}
       <p class="mt-3 flex-1 text-sm leading-relaxed text-slate-600">${summary}</p>
       ${cta}
     </a>

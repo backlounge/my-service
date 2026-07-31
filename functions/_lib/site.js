@@ -1,7 +1,6 @@
 // サイト全体で共有する定数。
-// SITE_URLは現在Cloudflare Pagesのデフォルトドメイン。独自ドメインを取得・接続した時点で差し替える。
 export const SITE_NAME = "BackLounge";
-export const SITE_URL = "https://my-service-4bi.pages.dev";
+export const SITE_URL = "https://backlounge.net";
 export const SITE_TAGLINE = "中小企業・個人事業主のための業務システム";
 
 export const NAV_ITEMS = [
