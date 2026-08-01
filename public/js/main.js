@@ -76,6 +76,7 @@ if (contactForm) {
             : "お問い合わせありがとうございます。担当者よりご連絡いたします。";
         formStatus.className = "text-sm text-brand-700";
         contactForm.reset();
+        trackAnalyticsEvent("contact_success");
       } else {
         throw new Error(result.message || "送信に失敗しました");
       }
@@ -89,3 +90,53 @@ if (contactForm) {
     }
   });
 }
+// Privacy-friendly first-party analytics. No IP address or personal form data is stored.
+function getAnalyticsSessionId() {
+  const key = "backlounge_analytics_session";
+  let value = sessionStorage.getItem(key);
+  if (!value) {
+    value = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    sessionStorage.setItem(key, value);
+  }
+  return value;
+}
+
+function trackAnalyticsEvent(eventName) {
+  const url = new URL(window.location.href);
+  let referrerHost = "";
+  try {
+    referrerHost = document.referrer ? new URL(document.referrer).hostname : "";
+  } catch {
+    referrerHost = "";
+  }
+
+  const payload = JSON.stringify({
+    event: eventName,
+    path: `${url.pathname}${url.search}`.slice(0, 240),
+    referrerHost,
+    utmSource: url.searchParams.get("utm_source") || "",
+    utmMedium: url.searchParams.get("utm_medium") || "",
+    utmCampaign: url.searchParams.get("utm_campaign") || "",
+    sessionId: getAnalyticsSessionId(),
+  });
+
+  if (navigator.sendBeacon) {
+    navigator.sendBeacon("/api/analytics", new Blob([payload], { type: "application/json" }));
+  } else {
+    fetch("/api/analytics", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: payload,
+      keepalive: true,
+    }).catch(() => {});
+  }
+}
+
+trackAnalyticsEvent("page_view");
+if (window.location.pathname === "/contact") trackAnalyticsEvent("contact_view");
+
+document.addEventListener("click", (event) => {
+  const link = event.target.closest("a[href]");
+  if (!link) return;
+  if ((link.getAttribute("href") || "").startsWith("/contact")) trackAnalyticsEvent("contact_click");
+});

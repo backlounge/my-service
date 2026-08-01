@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>アクセス解析 | BackLounge管理画面</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
+  <header class="border-b border-slate-200 bg-white">
+    <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-4">
+      <div class="flex items-center gap-6">
+        <p class="text-lg font-bold text-slate-900">管理画面</p>
+        <nav class="flex items-center gap-4 text-sm font-medium">
+          <a href="/admin/dashboard" class="text-slate-500 hover:text-brand-600">ダッシュボード</a>
+          <a href="/admin/analytics" class="text-brand-600">アクセス解析</a>
+          <a href="/admin" class="text-slate-500 hover:text-brand-600">お問い合わせ</a>
+        </nav>
+      </div>
+      <button id="logout-button" type="button" class="text-sm text-slate-500 hover:text-brand-600">ログアウト</button>
+    </div>
+  </header>
+  <main class="mx-auto max-w-5xl px-6 py-12">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900">アクセス解析</h1>
+        <p class="mt-2 text-sm text-slate-500">直近30日。公開後からデータが蓄積されます。</p>
+      </div>
+      <button id="refresh-button" type="button" class="btn-secondary">更新</button>
+    </div>
+    <p id="load-error" class="mt-8 hidden text-red-600"></p>
+    <section id="analytics-content" class="hidden">
+      <div class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div class="card"><p class="text-sm text-slate-500">ページ閲覧</p><p id="stat-page-views" class="mt-2 text-3xl font-semibold">-</p></div>
+        <div class="card"><p class="text-sm text-slate-500">訪問セッション</p><p id="stat-sessions" class="mt-2 text-3xl font-semibold">-</p></div>
+        <div class="card"><p class="text-sm text-slate-500">申込ボタンクリック</p><p id="stat-contact-clicks" class="mt-2 text-3xl font-semibold text-brand-600">-</p></div>
+        <div class="card"><p class="text-sm text-slate-500">クリック率</p><p id="stat-click-rate" class="mt-2 text-3xl font-semibold text-brand-600">-</p></div>
+      </div>
+      <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="card"><p class="text-sm text-slate-500">申込画面の表示</p><p id="stat-contact-views" class="mt-2 text-3xl font-semibold">-</p></div>
+        <div class="card"><p class="text-sm text-slate-500">フォーム送信成功</p><p id="stat-contact-success" class="mt-2 text-3xl font-semibold">-</p></div>
+      </div>
+      <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="card"><h2 class="font-semibold">流入元</h2><div id="source-list" class="mt-4 space-y-2 text-sm"></div></div>
+        <div class="card"><h2 class="font-semibold">閲覧ページ</h2><div id="page-list" class="mt-4 space-y-2 text-sm"></div></div>
+      </div>
+    </section>
+  </main>
+  <script src="/js/admin-common.js"></script>
+  <script src="/js/admin-analytics.js"></script>
+</body>
+</html>
