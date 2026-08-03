@@ -138,7 +138,7 @@ export async function onRequestGet() {
     <section class="bg-brand-600">
       <div class="mx-auto max-w-4xl px-6 py-16 text-center lg:px-8">
         <h2 class="text-3xl font-bold text-white">まずは商品一覧からご覧ください。</h2>
-        <p class="mt-4 text-brand-100">導入のご相談・お見積りは無料です。お気軽にお問い合わせください。</p>
+        <p class="mt-4 text-brand-100">導入のご相談や商品のご質問は無料です。お気軽にお問い合わせください。</p>
         <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <a href="/products" class="btn-primary bg-white !text-brand-700 hover:bg-brand-50">商品一覧を見る</a>
           <a href="/contact" class="btn-secondary !border-white/40 !bg-transparent !text-white hover:!bg-white/10">お問い合わせ</a>

@@ -32,7 +32,7 @@ export async function onRequestGet(context) {
         <p class="section-subtitle">${
           isPurchase
             ? "以下のフォームからお申し込みください。1〜2営業日以内に、金額とお支払い方法(銀行振込)をメールでご案内します。ご入金の確認後、プログラム一式のZIPファイルをメールでお届けします。"
-            : "導入のご相談・お見積りなど、お気軽にお問い合わせください。1〜2営業日以内にご返信いたします。"
+            : "導入のご相談や商品のご質問など、お気軽にお問い合わせください。1〜2営業日以内にご返信いたします。"
         }</p>
       </div>
 
@@ -84,7 +84,7 @@ export async function onRequestGet(context) {
 
   return renderLayout({
     title: isPurchase ? "購入のお申し込み" : "お問い合わせ",
-    description: "導入のご相談・お見積りのご依頼など、お気軽にお問い合わせください。",
+    description: "導入のご相談や商品のご質問など、お気軽にお問い合わせください。",
     path: "/contact",
     activeNav: "contact",
     bodyHtml,

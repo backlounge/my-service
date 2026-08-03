@@ -390,7 +390,7 @@ function renderLiveProduct(product) {
           isPurchasable
             ? `
         <h2 class="text-3xl font-bold text-white">${escapeHtml(product.name)}を購入する</h2>
-        <p class="mt-4 text-brand-100">導入のご相談・お見積りは無料です。まずはお気軽にお申し込み・お問い合わせください。</p>
+        <p class="mt-4 text-brand-100">導入のご相談や商品のご質問は無料です。まずはお気軽にお申し込み・お問い合わせください。</p>
         <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           ${
             hasSinglePrice
