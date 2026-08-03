@@ -1,4 +1,4 @@
-<title>業務システム製品サイト 設計書</title>
+<title>BackLounge サイト設計資料</title>
 
 <style>
   :root {
@@ -255,16 +255,16 @@
 
   <main>
     <section class="cover" id="cover">
-      <div class="eyebrow">Site Architecture — Draft for Review</div>
-      <h1>業務システム製品サイト 設計書</h1>
+      <div class="eyebrow">Site Architecture — Historical Reference</div>
+      <h1>BackLounge サイト設計資料</h1>
       <p class="lede">
-        「業務システム紹介LP」を、単発の会社紹介ページから、複数の業務システム製品を扱う
-        製品サイトへ再設計する。今回は設計のみ。実装はこの設計の確定後に着手する。
+        初期設計の参考資料です。現在の販売状況・作業担当は
+        <code>docs/現在地と次の作業.md</code> を正としてください。
       </p>
       <div class="cover-meta">
-        <span>対象: 業務システム紹介LP</span>
-        <span>現行商品: 見積管理システム(販売中)</span>
-        <span>準備中: 顧客管理 / 在庫管理 / 予約管理</span>
+        <span>対象: BackLounge</span>
+        <span>販売中: 見積管理 / 顧客管理</span>
+        <span>準備中: 在庫管理 / 予約管理</span>
       </div>
 
       <div class="req-table">
@@ -299,7 +299,7 @@
           <li><span class="path">/products</span><span class="label">商品一覧</span>
             <ul>
               <li><span class="path">/products/quote-management</span><span class="label">見積管理システム</span><span class="tag live">販売中</span></li>
-              <li><span class="path">/products/customer-management</span><span class="label">顧客管理システム</span><span class="tag prep">準備中</span></li>
+              <li><span class="path">/products/customer-management</span><span class="label">顧客管理システム</span><span class="tag live">販売中</span></li>
               <li><span class="path">/products/inventory-management</span><span class="label">在庫管理システム</span><span class="tag prep">準備中</span></li>
               <li><span class="path">/products/reservation-management</span><span class="label">予約管理システム</span><span class="tag prep">準備中</span></li>
             </ul>
