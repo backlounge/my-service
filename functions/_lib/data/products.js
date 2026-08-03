@@ -12,6 +12,20 @@ export const PRODUCTS = [
     priceSubNote: "24,800円（税込・買い切り）。月額費用はかかりません。",
     priceValue: 24800, // 構造化データ(SoftwareApplication.offers.price)用。税込価格。
     heroImage: "/images/products/quote-management/dashboard.png",
+    recommendedFor: [
+      {
+        title: "個人事業主・小規模店舗",
+        desc: "見積書を都度Excelで作り直したり、過去の案件を探したりする時間を減らしたい方。",
+      },
+      {
+        title: "サロン・美容室・整体などの予約型サービス",
+        desc: "お客さまごとのメニューや料金を、案件ごとの見積として整理してPDFで渡したい方。",
+      },
+      {
+        title: "少人数で案件を回している事業者",
+        desc: "顧客・案件・見積書の情報を、ひとつのWindows PCで分かりやすく管理したい方。",
+      },
+    ],
     painPoints: [
       "顧客の連絡先や商談履歴がExcelや紙にバラバラに残っている",
       "見積書を作るたびに、前回のファイルを探してフォーマットを直している",
@@ -128,6 +142,20 @@ export const PRODUCTS = [
     summary:
       "顧客の登録・検索・来店履歴の管理ができる、Windows用のデスクトップアプリです。ソフトをダウンロードして展開するだけで、アカウント登録や難しい設定をせずにすぐお使いいただけます。登録できる件数に応じて、ライト版・スタンダード版をご用意しています。",
     heroImage: "/images/products/customer-management/standard-main.png",
+    recommendedFor: [
+      {
+        title: "個人サロン・美容室・整体など",
+        desc: "顧客情報と来店・施術の履歴を、次の対応につなげられる形で残したい方。",
+      },
+      {
+        title: "1〜2人で運営する小さなお店",
+        desc: "紙・Excel・メモに散らばった情報を、まずは無理なく一か所にまとめたい方。",
+      },
+      {
+        title: "しばらく来店のないお客さまを見直したい方",
+        desc: "最後の来店日や履歴を検索して、次に連絡したいお客さまを確認したい方。",
+      },
+    ],
     painPoints: [
       "顧客の連絡先や来店履歴が、紙の台帳やバラバラのメモに散らばっている",
       "誰が・いつ・何回来店したか、担当者の記憶頼みになっている",

@@ -130,6 +130,27 @@ function renderLiveProduct(product) {
     }
 
     ${
+      product.recommendedFor
+        ? `
+    <section class="mx-auto max-w-5xl px-6 py-16 lg:px-8">
+      <p class="text-sm font-semibold text-brand-600">こんな方に向いています</p>
+      <h2 class="mt-2 text-2xl font-bold text-slate-900">日々の事務作業を、無理なく整理したい方へ</h2>
+      <div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        ${product.recommendedFor
+          .map(
+            (item) => `
+          <div class="card">
+            <h3 class="text-lg font-semibold text-slate-900">${escapeHtml(item.title)}</h3>
+            <p class="mt-2 text-slate-600">${escapeHtml(item.desc)}</p>
+          </div>`
+          )
+          .join("")}
+      </div>
+    </section>`
+        : ""
+    }
+
+    ${
       product.painPoints
         ? `
     <!-- 課題提起 -->
