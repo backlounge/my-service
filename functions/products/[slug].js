@@ -1,6 +1,6 @@
 import { renderLayout } from "../_lib/layout.js";
 import { renderBreadcrumb, renderStatusPill, renderFaqList, renderFaqSchema, renderBlogCard, renderCaseStudyCard } from "../_lib/components.js";
-import { getProductBySlug } from "../_lib/data/products.js";
+import { getProductBySlug, PRODUCTS } from "../_lib/data/products.js";
 import { getPostsByProduct } from "../_lib/data/blog-posts.js";
 import { CASE_STUDIES } from "../_lib/data/case-studies.js";
 import { isValidSlug, escapeHtml, SITE_URL } from "../_lib/site.js";
@@ -26,6 +26,7 @@ function renderComingSoon(product) {
 function renderLiveProduct(product) {
   const relatedPosts = getPostsByProduct(product.slug);
   const relatedCaseStudies = CASE_STUDIES.filter((c) => c.relatedProductSlug === product.slug).slice(0, 2);
+  const otherLiveProducts = PRODUCTS.filter((candidate) => candidate.status === "live" && candidate.slug !== product.slug);
 
   const screenshotsHtml = (product.screenshots || [])
     .map(
@@ -95,6 +96,38 @@ function renderLiveProduct(product) {
         }
       </p>
     </section>
+
+    ${
+      otherLiveProducts.length
+        ? `
+    <section class="border-y border-slate-100 bg-slate-50 py-10">
+      <div class="mx-auto max-w-5xl px-6 lg:px-8">
+        <p class="text-sm font-semibold text-brand-600">あわせて検討される商品</p>
+        <h2 class="mt-2 text-2xl font-bold text-slate-900">別の業務の困りごとも、まとめて解決できます</h2>
+        <p class="mt-3 max-w-2xl text-slate-600">必要な機能からお選びください。各商品は買い切り型で、個別にお申し込みいただけます。</p>
+        <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          ${otherLiveProducts
+            .map((candidate) => {
+              const priceText =
+                candidate.priceNote ||
+                (candidate.editions || [])
+                  .filter((edition) => edition.priceValue)
+                  .map((edition) => `${edition.name} ${edition.priceValue.toLocaleString("ja-JP")}円`)
+                  .join(" ／ ");
+              return `
+              <a href="/products/${encodeURIComponent(candidate.slug)}" class="rounded-xl border border-slate-200 bg-white p-5 transition hover:border-brand-400 hover:shadow-sm">
+                <p class="font-semibold text-slate-900">${escapeHtml(candidate.name)}</p>
+                <p class="mt-1 text-sm text-slate-600">${escapeHtml(candidate.tagline)}</p>
+                ${priceText ? `<p class="mt-3 text-sm font-semibold text-brand-700">${escapeHtml(priceText)}</p>` : ""}
+                <span class="mt-4 inline-block text-sm font-semibold text-brand-600">詳しく見る →</span>
+              </a>`;
+            })
+            .join("")}
+        </div>
+      </div>
+    </section>`
+        : ""
+    }
 
     ${
       product.painPoints
