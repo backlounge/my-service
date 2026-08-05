@@ -48,6 +48,9 @@ function renderLiveProduct(product) {
     product.purchaseEnabled && product.editions && product.editions.some((e) => e.price)
   );
   const isPurchasable = hasSinglePrice || hasEditionPricing;
+  const hasBaseCheckout = Boolean(
+    product.checkoutUrl || (product.editions || []).some((edition) => edition.checkoutUrl)
+  );
   // 価格は確定しているが購入導線(振込口座・納品運用)がまだ整っていない商品向けの中間状態。
   const pricingAnnounced = isPurchasable || Boolean(product.pricingAnnounced);
 
@@ -75,11 +78,11 @@ function renderLiveProduct(product) {
         ${
           hasSinglePrice
             ? `
-        <a href="/contact?product=${encodeURIComponent(product.slug)}&intent=purchase" class="btn-primary">購入を申し込む</a>
+        <a href="${escapeHtml(product.checkoutUrl || `/contact?product=${encodeURIComponent(product.slug)}&intent=purchase`)}" class="btn-primary"${product.checkoutUrl ? ' target="_blank" rel="noopener noreferrer"' : ""}>${product.checkoutUrl ? "BASEで購入する" : "購入を申し込む"}</a>
         <a href="/contact?product=${encodeURIComponent(product.slug)}" class="btn-secondary">まず相談する</a>`
             : hasEditionPricing
               ? `
-        <a href="#editions" class="btn-primary">プランを見て申し込む</a>
+        <a href="#editions" class="btn-primary">プランを選んで購入する</a>
         <a href="/contact?product=${encodeURIComponent(product.slug)}" class="btn-secondary">まず相談する</a>`
               : `<a href="/contact?product=${encodeURIComponent(product.slug)}" class="btn-primary">お問い合わせする</a>`
         }
@@ -87,9 +90,13 @@ function renderLiveProduct(product) {
       <p class="mt-3 text-sm text-slate-500">
         ${
           hasSinglePrice
-            ? `オンライン決済ページはありません。お申し込み後、メールでお支払い方法をご案内し、ご入金確認後にZIPをお届けします(<a href="#purchase-flow" class="underline hover:text-brand-600">ご購入の流れ</a>)。`
+            ? hasBaseCheckout
+              ? `「BASEで購入する」から決済できます。決済確認後、原則1〜2営業日以内にZIPのダウンロード案内を登録メールアドレスへお送りします(<a href="#purchase-flow" class="underline hover:text-brand-600">ご購入の流れ</a>)。`
+              : `オンライン決済ページはありません。お申し込み後、メールでお支払い方法をご案内し、ご入金確認後にZIPをお届けします(<a href="#purchase-flow" class="underline hover:text-brand-600">ご購入の流れ</a>)。`
             : hasEditionPricing
-              ? `料金・お申し込みはプランごとに異なります。下記の比較表にある各プランの「購入を申し込む」ボタンからお申し込みください。オンライン決済ページはありません(<a href="#purchase-flow" class="underline hover:text-brand-600">ご購入の流れ</a>)。`
+              ? hasBaseCheckout
+                ? `料金・決済はプランごとに異なります。下記の比較表にある各プランの「BASEで購入する」ボタンから決済できます(<a href="#purchase-flow" class="underline hover:text-brand-600">ご購入の流れ</a>)。`
+                : `料金・お申し込みはプランごとに異なります。下記の比較表にある各プランの「購入を申し込む」ボタンからお申し込みください。オンライン決済ページはありません(<a href="#purchase-flow" class="underline hover:text-brand-600">ご購入の流れ</a>)。`
               : pricingAnnounced
                 ? `価格は確定しています(下記のライト版・スタンダード版の比較をご確認ください)。お申し込み方法は現在ご案内の準備を進めており、開始まで今しばらくお待ちください。ご興味をお持ちの方はお問い合わせください。`
                 : `価格・お申し込み方法は現在ご案内の準備を進めています。決まり次第このページでご案内しますので、ご興味をお持ちの方はお問い合わせください。`
@@ -209,7 +216,7 @@ function renderLiveProduct(product) {
             </ul>
             ${
               hasEditionPricing && e.key
-                ? `<a href="/contact?product=${encodeURIComponent(product.slug)}&edition=${encodeURIComponent(e.key)}&intent=purchase" class="btn-primary mt-6 text-center">購入を申し込む</a>`
+                ? `<a href="${escapeHtml(e.checkoutUrl || `/contact?product=${encodeURIComponent(product.slug)}&edition=${encodeURIComponent(e.key)}&intent=purchase`)}" class="btn-primary mt-6 text-center"${e.checkoutUrl ? ' target="_blank" rel="noopener noreferrer"' : ""}>${e.checkoutUrl ? "BASEで購入する" : "購入を申し込む"}</a>`
                 : ""
             }
           </div>`
@@ -304,7 +311,7 @@ function renderLiveProduct(product) {
     <section id="purchase-flow" class="bg-slate-50 py-16">
       <div class="mx-auto max-w-5xl px-6 lg:px-8">
         <h2 class="text-2xl font-bold text-slate-900">ご購入の流れ</h2>
-        <p class="mt-2 text-slate-600">当サイトから直接、個別にお届けします(オンライン決済ページはありません)。</p>
+        <p class="mt-2 text-slate-600">${hasBaseCheckout ? "BASEでの決済確認後、原則1〜2営業日以内にダウンロード案内を登録メールアドレスへお送りします。" : "当サイトから直接、個別にお届けします(オンライン決済ページはありません)。"}</p>
         <ol class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           ${product.purchaseFlow
             .map(
@@ -326,12 +333,12 @@ function renderLiveProduct(product) {
           hasSinglePrice
             ? `
         <div class="mt-8">
-          <a href="/contact?product=${encodeURIComponent(product.slug)}&intent=purchase" class="btn-primary">購入を申し込む</a>
+          <a href="${escapeHtml(product.checkoutUrl || `/contact?product=${encodeURIComponent(product.slug)}&intent=purchase`)}" class="btn-primary"${product.checkoutUrl ? ' target="_blank" rel="noopener noreferrer"' : ""}>${product.checkoutUrl ? "BASEで購入する" : "購入を申し込む"}</a>
         </div>`
             : hasEditionPricing
               ? `
         <div class="mt-8">
-          <a href="#editions" class="btn-primary">プランを見て申し込む</a>
+          <a href="#editions" class="btn-primary">プランを選んで購入する</a>
         </div>`
               : ""
         }
@@ -349,7 +356,7 @@ function renderLiveProduct(product) {
       <p class="mt-4 text-3xl font-bold text-slate-900">${escapeHtml(product.priceNote)}</p>
       <p class="mt-3 text-slate-600">${escapeHtml(product.priceSubNote || "価格は個別にご案内しています。金額をご確認のうえで購入をお決めいただけます。")}</p>
       <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-        <a href="/contact?product=${encodeURIComponent(product.slug)}&intent=purchase" class="btn-primary">購入を申し込む</a>
+        <a href="${escapeHtml(product.checkoutUrl || `/contact?product=${encodeURIComponent(product.slug)}&intent=purchase`)}" class="btn-primary"${product.checkoutUrl ? ' target="_blank" rel="noopener noreferrer"' : ""}>${product.checkoutUrl ? "BASEで購入する" : "購入を申し込む"}</a>
         <a href="/contact?product=${encodeURIComponent(product.slug)}" class="btn-secondary">価格を問い合わせる</a>
       </div>
     </section>`
@@ -390,12 +397,12 @@ function renderLiveProduct(product) {
           isPurchasable
             ? `
         <h2 class="text-3xl font-bold text-white">${escapeHtml(product.name)}を購入する</h2>
-        <p class="mt-4 text-brand-100">導入のご相談や商品のご質問は無料です。まずはお気軽にお申し込み・お問い合わせください。</p>
+        <p class="mt-4 text-brand-100">導入のご相談や商品のご質問は無料です。購入はBASEでのオンライン決済、確認したい点はお問い合わせから承ります。</p>
         <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           ${
             hasSinglePrice
-              ? `<a href="/contact?product=${encodeURIComponent(product.slug)}&intent=purchase" class="btn-primary bg-white !text-brand-700 hover:bg-brand-50">購入を申し込む</a>`
-              : `<a href="#editions" class="btn-primary bg-white !text-brand-700 hover:bg-brand-50">プランを見て申し込む</a>`
+              ? `<a href="${escapeHtml(product.checkoutUrl || `/contact?product=${encodeURIComponent(product.slug)}&intent=purchase`)}" class="btn-primary bg-white !text-brand-700 hover:bg-brand-50"${product.checkoutUrl ? ' target="_blank" rel="noopener noreferrer"' : ""}>${product.checkoutUrl ? "BASEで購入する" : "購入を申し込む"}</a>`
+              : `<a href="#editions" class="btn-primary bg-white !text-brand-700 hover:bg-brand-50">プランを選んで購入する</a>`
           }
           <a href="/contact?product=${encodeURIComponent(product.slug)}" class="text-sm font-semibold text-white underline hover:text-brand-100">まず相談する</a>
         </div>`
